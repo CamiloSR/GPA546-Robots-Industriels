@@ -21,7 +21,7 @@ MODULE Lab1
   ! Donnees de type constante
   CONST num Epaisseur:= 1; ! Épaisseur d'un bloc (en pouces)
   CONST num PouceToMM:= 25.4; ! Facteur de conversion
-  CONST num Decalage:= 25.4; ! Distance d'approche ou de retrait (mm)
+  CONST num Decalage:= (Epaisseur * PouceToMM) + 0; ! Distance d'approche ou de retrait (mm) Additionnele(ajouter +X pour marge de sécurité)
 
   ! Données de type Variable
   VAR num EpaisMM:=0;
@@ -63,7 +63,7 @@ PROC main()
 
 	! 2) Calculs :
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
-	rDepot2 := Offs(rDepot,0,0,EpaisMM);
+	rDepot2 := Offs(rDepot,0,0,-EpaisMM);
 
 	! 3) Déplacement du premier bloc :
 	! Prise du bloc dans le glissoire
@@ -73,9 +73,9 @@ PROC main()
 
 	! 4) Déplacement du deuxième bloc :
 	! Prise du bloc dans le glissoire
-	! ************* A compléter... *************
+	Prise;
 	! Dépôt du bloc 2 à la localisation rDepot :
-	! ************* A compléter... *************
+	Depot(rDepot2);
 
 	! 5) Retourner le robot a la position de repos
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
