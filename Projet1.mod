@@ -78,7 +78,7 @@ PROC main()
 	! ************* A compléter... *************
 
 	! 5) Retourner le robot a la position de repos
-	MoveJ ____, ____, fine, tPince_bloc______;
+	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
 	
 	Pince\Ouvert; ! Ouvrir la pince
 
@@ -183,12 +183,18 @@ ENDPROC
 !
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
-PROC Depot(robtarget rPosDepot)
+PROC Depot(robtarget rPosDepot) 	! Déclaration de la procédure de dépôt
+	! 1) Approche rapide à la position de dépôt, en décalant en Z pour éviter les collisions
+	MoveJ RelTool(rPosDepot,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
 
-	MoveJ RelTool(___,___,___,___), ____, z50, tPince_bloc\wobj:=wobj0;
-	MoveL rPosDepot, ____, fine, tPince_bloc;
+	! 2) Descente linéaire en mode « fine » à vitesse réduite pour un positionnement précis
+	MoveL rPosDepot, LowSpeed, fine, tPince_bloc;
+
+	! 3) Ouverture de la pince pour relâcher le bloc
 	Pince\Ouvert; ! Ouvrir la pince
-	MoveL RelTool(___,___,___,___), ____, z50, tPince_bloc\wobj:=wobj0;
+
+	! 4) Remontée linéaire à la position d’approche (décalée en Z) pour dégager l’outil
+	MoveL RelTool(rPosDepot,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
 
 ENDPROC
 !**************************************************************************************
