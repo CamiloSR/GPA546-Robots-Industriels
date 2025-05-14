@@ -16,7 +16,7 @@ MODULE Exemple_PRojet1_Yumi
   ! Donnees de type position enseignees
   PERS robtarget rGlissoire:=[[0,0,0],[1,0,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepot:=[[0,0,0],[1,0,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=:=[[0,0,0],[1,0,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[0,0,0],[1,0,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   
   
   
@@ -27,7 +27,7 @@ MODULE Exemple_PRojet1_Yumi
   ! Donnees de type constante
   CONST num Epaisseur:= 1; ! Épaisseur d'un bloc (en pouces)
   CONST num PouceToMM:= 25.4; ! Facteur de conversion
-  CONST num Decalage:= 80; ! Distance d'approche ou de retrait (mm)
+  CONST num Decalage:= -80; ! Distance d'approche ou de retrait (mm)
 
   ! Données de type Variable
   VAR num EpaisMM:=0;
@@ -69,8 +69,8 @@ PROC main()
 
 	! 2) Calculs :
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
-	! rDepot2 := Offs(rDepot,0,0,EpaisMM);
-	rDepot2 := RelTool(rDepot, 0, 0, −EpaisMM);
+	 rDepot2 := Offs(rDepot,0,0,EpaisMM);
+	!rDepot2 := RelTool(rDepot, 0, 0, −EpaisMM);
 
 	! 3) Déplacement du premier bloc :
 	! Prise du bloc dans le glissoire
