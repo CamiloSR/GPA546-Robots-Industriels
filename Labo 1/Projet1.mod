@@ -21,7 +21,7 @@ MODULE Lab1
   ! Donnees de type constante
   CONST num Epaisseur:= 1; ! Épaisseur d'un bloc (en pouces)
   CONST num PouceToMM:= 25.4; ! Facteur de conversion
-  CONST num Decalage:= (Epaisseur * PouceToMM) + 0; ! Distance d'approche ou de retrait (mm) Additionnele(ajouter +X pour marge de sécurité)
+  CONST num Decalage:= -80; ! Distance d'approche ou de retrait (mm) Additionnele(ajouter +X pour marge de sécurité)
 
   ! Données de type Variable
   VAR num EpaisMM:=0;
