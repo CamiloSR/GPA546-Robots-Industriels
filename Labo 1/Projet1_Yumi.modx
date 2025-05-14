@@ -4,7 +4,7 @@ MODULE Exemple_PRojet1_Yumi
 !=========================================== 
 ! ----------------------------------------------------------------------------
 ! Programme : GPA546Lab1
-! Auteurs : Olivier Millette & Camilio Serna Restrepo
+! Auteurs : Olivier Millette & Camilo Serna Restrepo
 ! Date : 2025-05-13
 ! Révision : ________________
 !
@@ -27,7 +27,7 @@ MODULE Exemple_PRojet1_Yumi
   ! Donnees de type constante
   CONST num Epaisseur:= 1; ! Épaisseur d'un bloc (en pouces)
   CONST num PouceToMM:= 25.4; ! Facteur de conversion
-  CONST num Decalage:= 80&&&&; ! Distance d'approche ou de retrait (mm)
+  CONST num Decalage:= 80; ! Distance d'approche ou de retrait (mm)
 
   ! Données de type Variable
   VAR num EpaisMM:=0;
@@ -69,28 +69,29 @@ PROC main()
 
 	! 2) Calculs :
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
-	rDepot2 := Offs(rDepot,0,0,EpaisMM&&&&);
+	! rDepot2 := Offs(rDepot,0,0,EpaisMM);
+	rDepot2 := RelTool(rDepot, 0, 0, −EpaisMM);
 
 	! 3) Déplacement du premier bloc :
 	! Prise du bloc dans le glissoire
 	Prise;
 	! Dépôt du bloc 1 à la localisation rDepot :
-	Depot(rDepot&&&&&);
+	Depot(rDepot);
 
 	! 4) Déplacement du deuxième bloc :
 	! Prise du bloc dans le glissoire
 	Prise;
 	! Dépôt du bloc 2 à la localisation rDepot :
-	Depot(rDepot2&&&&&);
+	Depot(rDepot2);
 
 	! 5) Retourner le robot a la position de repos
-	MoveJ rRetrait&&&&, HighSpeed&&&&, fine, wi_tGripper\wobj:=wobj0&&&&&&;
+	MoveJ rRetrait, HighSpeed, fine, wi_tGripper\wobj:=wobj0;
 	
 	
-    g_GripOut;! Ouvrir la pince
+    g_GripOut; ! Ouvrir la pince
     WaitTime 2;
     
-    !Pince\Ouvert; 
+    ! Pince\Ouvert; 
 
 ENDPROC
 !**************************************************************************************
@@ -181,13 +182,18 @@ ENDPROC
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
 PROC Depot(robtarget rPosDepot)
+	! 1) Approche rapide à la position de dépôt, en décalant en Z pour éviter les collisions
+	MoveJ RelTool(rPosDepot,0,0,Decalage), HighSpeed, z50, wi_tGripper\wobj:=wobj0;
 
-	MoveJ RelTool(rPosDepot&&&&,0&&&,0&&&,Decalage&&&&&), HighSpeed&&&&, z50, wi_tGripper\wobj:=wobj0;
-	MoveL rPosDepot,LowSpeed&&&&&, fine, wi_tGripper;
-	
-    g_GripOut;! Ouvrir la pince
+	! 2) Descente linéaire en mode « fine » à vitesse réduite pour un positionnement précis
+	MoveL rPosDepot,LowSpeed, fine, wi_tGripper;
+
+	! 3) Ouverture de la pince pour relâcher le bloc
+    	g_GripOut;! Ouvrir la pince
+
     g_stop;
-	MoveL RelTool(rPosDepot&&&&,0&&&,0&&&&,Decalage&&&&&), LowSpeed&&&&&, z50, wi_tGripper\wobj:=wobj0;
+	! 4) Remontée linéaire à la position d’approche (décalée en Z) pour dégager l’outil
+	MoveL RelTool(rPosDepot,0,0,Decalage), LowSpeed, z50, wi_tGripper\wobj:=wobj0;
 
 ENDPROC
 !**************************************************************************************
