@@ -1,9 +1,9 @@
 MODULE Lab1
 ! ----------------------------------------------------------------------------
 ! Programme : GPA546Lab1
-! Auteurs : _______________ ET ______________
-! Date : _________________
-! Révision : ________________
+! Auteurs : Olivier Millette ET Camilo Serna
+! Date : Mai 14, 2024
+! Révision : V0.0
 !
 ! Description :
 ! Ce programme permet de prendre deux blocs dans une glissoire et de les
