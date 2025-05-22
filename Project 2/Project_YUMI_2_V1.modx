@@ -228,7 +228,7 @@ PROC ValidateRetrait()
     ! pos_Actuelle := CRobT(\Tool:=wi_tGripper, \WObj:=wobj0);
     
 !    VAR string msg := "This is a INITIAL test Message" + NumToStr(dist, 0);
-    msg := "This is a INITIAL test Message";
+    msg := "This is an INITIAL test Message";
     TPWrite msg;
 
 ENDPROC
