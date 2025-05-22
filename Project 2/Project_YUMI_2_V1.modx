@@ -1,82 +1,86 @@
-MODULE Exemple_PRojet1_Yumi
-!===========================================    
-! Révisé par Ahmed Joubair (Septembre 2021)
-!=========================================== 
-! ----------------------------------------------------------------------------
-! Programme : GPA546Lab1
-! Auteurs : Olivier Millette & Camilo Serna Restrepo
-! Date : 2025-05-13
+MODULE Demo
+
+!@@@@@@@@@@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@@@@@@
+! Pour ouvrir la pince sur le simulateur: Pince_Ouvre;
+! Pour fermer la pince sur le simulateur: Pince_Ferme;
+! Pour ouvrir la pince sur le vrai robot Yumi: g_GripOut;
+! Pour fermer la pince sur le vrai robot Yumi: g_GripIn;
+!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+! -------------------------------------------------------------------------------------
+! Programme : Demo
+! Auteurs : _______________ ET ______________
+! Date : _________________
 ! Révision : ________________
 !
 ! Description :
 ! Ce programme permet de prendre deux blocs dans une glissoire et de les
-! superposer sur une table de travail.
-! ----------------------------------------------------------------------------
-    
-PERS tooldata wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
-! Donnees de type position enseignees sur le mode simulation
-PERS robtarget rGlissoire:=[[-196.91,283.65,56.14],[0.207135,-0.687379,0.661567,0.216645],[0,-2,-1,4],[-45.0214,9E+9,9E+9,9E+9,9E+9,9E+9]];
-PERS robtarget rDepot:=[[-145.22,-288.86,5.25],[0.00655002,-0.786845,-0.61711,-0.00271575],[1,1,-1,4],[-12.2369,9E+9,9E+9,9E+9,9E+9,9E+9]];
-PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
+! superposer sur une table de travail, avec les trous dans le même sens.
+! -------------------------------------------------------------------------------------
 
+  ! Données de l'outil (pince) : actif, position TCP, orientation, masse, centre de gravité, inertie
+  PERS tooldata wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
+
+
+  ! "Positions" à peufiner sur le vrai robot
+  
+  ! Position cible "Crayon" à ajuster : position XYZ, orientation quaternion, configuration robot, valeur d’extaxe
+  PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  ! Position cible "Glissoire" : même structure que ci-dessus
+  PERS robtarget rGlissoire:=[[-193.434,277.819,65.0723],[0.212106,-0.671728,0.677924,0.210267],[0,0,2,5],[-88.7724,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  ! Position de repli du robot en coordonnées articulaires
+  PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  ! Position cible "Dépôt" pour déposer un objet
+  PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  
 ! Donnees de type position enseignees sur le Robot REEL A0610
 !  PERS robtarget rGlissoire:=[[-198.06,298.21,69.39],[0.191697,-0.682156,0.666204,0.232568],[0,-2,-1,4],[-45.0214,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rDepot:=[[-375.57,-183.03,38.56],[0.0317796,-0.759987,-0.647212,0.0502556],[0,0,-1,4],[-13.1289,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-! Donnees de type position calculees
-VAR robtarget rDepot2;
+  
+  ! Donnees de type "positions" calculées
+  VAR robtarget rDepot2;
+  VAR pos pos_rRetrait;
+  VAR pos pos_Actuelle;
+  VAR num dist;
+  VAR string msg;
 
-! Donnees de type constante
-CONST num Epaisseur:= 1; ! Épaisseur d'un bloc (en pouces)
-CONST num PouceToMM:= 25.4; ! Facteur de conversion
-CONST num Decalage:= -80; ! Distance d'approche ou de retrait (mm)
+  ! Donnees de type constante
+  CONST num Epaisseur:=1; ! Épaisseur d'un bloc (en pouces)
+  CONST num PouceToMM:=25.4; ! Facteur de conversion
+  CONST num Decalage:=200; ! Distance d'approche ou de retrait (mm)
 
-! Données de type Variable
-VAR num EpaisMM:=0;
+  ! Données de type variable
+  VAR num EpaisMM:=0;  
+  
 
-! Vitesse d'approche et de retrait (mm/sec)
-CONST speeddata LowSpeed:=[250,500,5000,1000];
+  ! Vitesse d'approche et de retrait (mm/sec)
+  CONST speeddata LowSpeed:=[250,500,5000,1000];
+  
+  ! Vitesse maximale du robot (mm/sec)
+  CONST speeddata HighSpeed:=[1000,500,5000,1000];
 
-! Vitesse maximale du robot (mm/sec)
-CONST speeddata HighSpeed:=[1000,500,5000,1000];
+  ! Etat des entrees/sorties
+  CONST dionum Ouverte:=0;
+  CONST dionum Fermee:=1;
+  CONST dionum Retracte:=0;
+  CONST dionum Extension:=1;
 
-! Etat des entrees/sorties
-CONST dionum Ouverte:=0;
-CONST dionum Fermee:=1;
-CONST dionum Retracte:=0;
-CONST dionum Extension:=1;
-
-! Variable pour limiter la zone de travail du robot
-VAR wztemporary EspaceRestreint;
-
-
-VAR pos pos_rRetrait;
-VAR pos pos_Actuelle;
-VAR num dist := 4 + 3;
-VAR string msg;
-
-! ----------------------------------------------------------------------------
+! -------------------------------------------------------------------------------------
 ! Procedure : main
-! Auteurs : Yanick Noiseux
-! Date : 4-08-2011
-! Révision : 1.1
-! Révision par: Martin Gaudreault
-! Description :
-! Routine qui est executee par le robot initialement.
-! **** elle doit être en mode "cycle"
-!
-! ----------------------------------------------------------------------------
-!**************************************************************************************
+! -------------------------------------------------------------------------------------
 PROC main()
+    
 	! 1) Initialisation :
 	init;
     
-    ! 1.1) Validaiton dostance du point securitaire rRetrait :
     ValidateRetrait;
     
-	! Deplacement a la position de repos
-	MoveJ rRetrait, HighSpeed, fine, wi_tGripper\wobj:=wobj0;
+    
+	! Deplacement à retrait
+	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
 
 	! 2) Calculs :
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
@@ -90,150 +94,135 @@ PROC main()
 
 	! 4) Déplacement du deuxième bloc :
 	! Prise du bloc dans le glissoire
-	Prise;
+    Prise;
 	! Dépôt du bloc 2 à la localisation rDepot :
 	Depot(rDepot2);
-
-	! 5) Retourner le robot a la position de repos
-	MoveJ rRetrait, HighSpeed, fine, wi_tGripper\wobj:=wobj0;
-	
-	
-    g_GripOut;! Ouvrir la pince
-    WaitTime 2;
     
-    !Pince\Ouvert; 
-
+	! 5) Retourner à retrait
+	MoveAbsJ jRetrait,HighSpeed,z50,tPince\wobj:=wobj0;
+	
+	Pince_Ouvre;
+    SetDO CabinetIO_0_DO16,1; ! ramasse-les-blocs dans la simulation
+    WaitTime 2; 
+    SetDO CabinetIO_0_DO16,0; ! ramasse-les-blocs dans la simulation
+    
 ENDPROC
-!**************************************************************************************
 
-! ----------------------------------------------------------------------------
+! -------------------------------------------------------------------------------------
 ! Procedure : init
-! Auteurs : Yanick Noiseux
-! Date : 4-08-2011
-! Révision : 1.1
-! Révision par: Martin Gaudreault
-! Description :
-! Routine qui initialise les variables systèmes et les états des sorties
-!
-! ----------------------------------------------------------------------------
-!**************************************************************************************
+! -------------------------------------------------------------------------------------
 PROC init()
-
-
-    ! %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Initialisation Smart gripper
+    
+    ! Initialisation du Smart gripper
     !g_Calibrate \Jog;
     G_init \Calibrate;
-    !%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
 	VelSet 25,1000; ! Limitation imposée pour la sécurité, obligatoire
 
-	SetDO CabinetIO_0_DO9_FV0101, Retracte; ! Rentrer le vérin         %% IRB1600: CabinetIO_0_DO9_FV0101, Retracte
+	SetDO CabinetIO_0_DO9_FV0101, Retracte; ! Rentrer le vérin
 	 
-    g_GripOut; ! Ouvrir la pince
+    ! Ouvrir la pince
+    Pince_Ouvre;
     WaitTime 2;
     
 ENDPROC
-!**************************************************************************************
 
-! ----------------------------------------------------------------------------
-! Procedure : Prise
-! Auteurs : Yanick Noiseux
-! Date : 4-08-2011
-! Révision : 1.0
-!
-! Description :
-! Routine qui s'approche du glissoire, atends une piece, 
-! l'indexe et la prends de maniere securitaire
-!
-! ----------------------------------------------------------------------------
-!**************************************************************************************
+! -------------------------------------------------------------------------------------
+! Procédure : Prise
+! Description : S'approcher de la glissoire, attendre une pièce dans la glissoire,
+! l'indexer, la prendre de manière sécuritaire
+! -------------------------------------------------------------------------------------
 PROC Prise()
 
-! Vérification de présence de bloc dans la glissoire
+    VAR robtarget rGlissoireCalc;
+    
+    ! Vérification de la présence d'un bloc dans la glissoire
 	IF CabinetIO_0_DI9_ZS0101 = 0 THEN
 		TPErase;
 		TPWrite "Aucun bloc dans la glissoire";
-		TPWrite "Placer deux bloc et remettre en mode AUTO";
+		TPWrite "Placer deux blocs et remettre en mode AUTO";
 		WaitDI CabinetIO_0_DI9_ZS0101, 1; ! Attente d'un bloc
 		Waittime 1; ! attente que le bloc se stabilise
 	ENDIF
-
-	! Prehension du bloc
-	MoveJ RelTool(rGlissoire,0,0,Decalage),HighSpeed,z50,wi_tGripper\wobj:=wobj0;
-	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Indexer le bloc durant le mouvement
-	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Attendre pour le vérin sortie
-	MoveL rGlissoire, LowSpeed, fine, wi_tGripper\wobj:=wobj0;
-	
     
-   
+    ! Prendre le bloc de la même façon par rapport au trou
+    IF CabinetIO_0_DI10_ZS0102 = 1 THEN
+    	rGlissoireCalc := RelTool(rGlissoire, 0, 0, 0 \Rz := 180);
+        rGlissoireCalc.robconf.cf6 := 0;
+    ELSE
+    	rGlissoireCalc := rGlissoire;
+    ENDIF
+    
+    ! Préhension du bloc
+    ConfJ \Off;
+    ConfL \Off;
+    MoveAbsJ jRetrait, HighSpeed, z50,tPince\wobj:=wobj0;
+	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\wobj:=wobj0;
+	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Pousser le bloc
+	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Attendre que le vérin soit complètement sorti
+	MoveL rGlissoireCalc, LowSpeed, fine, tPince\wobj:=wobj0;
+	
 	SetDO CabinetIO_0_DO9_FV0101, Retracte;
     !WAITDI CabinetIO_0_DI14_ZS0104,0;
 	 WAITDI CabinetIO_0_DI13_ZS0103,1;
-     g_GripIn; ! Fermer la pince
+    !g_GripIn; ! Fermer la pince
+    Pince_Ferme;
     
-	MoveL RelTool(rGlissoire,0,0,Decalage),LowSpeed,z50,wi_tGripper\wobj:=wobj0;
+	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\wobj:=wobj0;
 	
 ENDPROC
-!**************************************************************************************
 
-! ----------------------------------------------------------------------------
-! Procedure : Depot
-! Auteurs : Yanick Noiseux
-! Date : 4-08-2011
-! Révision : 1.1
-! Révision par: Martin Gaudreault
-! Description :
-! Routine qui initialise les variables systèmes et les états des sorties
-!
-! Parametre: recoit un robtarget où aller déposer le bloc avec aproche et degagement
-!
-! ----------------------------------------------------------------------------
-!**************************************************************************************
+! -------------------------------------------------------------------------------------
+! Procédure : Depot
+! Argument : Reçoit un robtarget indiquant où placer un bloc, avec une approche et
+! un dégagement.
+! -------------------------------------------------------------------------------------
 PROC Depot(robtarget rPosDepot)
 
-	MoveJ RelTool(rPosDepot,0,0,Decalage), HighSpeed, z50, wi_tGripper\wobj:=wobj0;
-	MoveL rPosDepot,LowSpeed, fine, wi_tGripper;
+    ! Même si rPosDepot a élé enseigné, en mettant les conf à Off, le robot fait
+    ! moins de mouvements inutiles
+    ConfJ \Off;
+	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\wobj:=wobj0;
+    ConfL \Off;
+	MoveL rPosDepot, LowSpeed, fine, tPince;
 	
-    g_GripOut;! Ouvrir la pince
-    g_stop;
-	MoveL RelTool(rPosDepot,0,0,Decalage), LowSpeed, z50, wi_tGripper\wobj:=wobj0;
+    !g_GripOut;! Ouvrir la pince
+    !g_stop;
+    Pince_Ouvre;
+	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\wobj:=wobj0;
 
 ENDPROC
 
-!**************************************************************************************
-
-PROC g_GripIn()
-    !Pince_Ferme; Commande du gripper réel
+! -------------------------------------------------------------------------------------
+! Utilisez ces deux procédures pour fermer ou ouvrir la pince de Yumi.
+! Sur le vrai robot, utilisez les commandes g_GripIn et g_GripOut
+! -------------------------------------------------------------------------------------
+PROC Pince_Ferme()
     SetDO custom_DO_0_gClose,1;
     SetDO custom_DO_1_gOpen,0;
+    !g_GripIn;
     WaitTime 1.5;
 ENDPROC
-
-PROC g_GripOut()
-    !g_JogOut;Commande du gripper réel
-    SetDO custom_DO_1_gOpen,1;
-    SetDO custom_DO_0_gClose,0;
-    WaitTime 1.5;
+   
+PROC Pince_Ouvre()
+     SetDO custom_DO_1_gOpen,1;
+     SetDO custom_DO_0_gClose,0;
+     !g_GripOut;
+     WaitTime 1.5;
 ENDPROC
 
 
 PROC ValidateRetrait()
     
-!    VAR robtarget tmpRetrait := rRetrait;
-
-!    VAR pos pos_Actuelle := CPos(\Tool:=wi_tGripper);
-!    VAR pos pos_rRetrait := rRetrait.trans;
-
-    ! get current gripper position in rRetrait frame
-    ! pos_Actuelle := CRobT(\Tool:=wi_tGripper, \WObj:=wobj0);
+    pos_rRetrait := rRetrait.trans;
+    pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=wobj0);
     
-!    VAR string msg := "This is a INITIAL test Message" + NumToStr(dist, 0);
-    msg := "This is an INITIAL test Message";
+    dist := Distance(pos_rRetrait, pos_Actuelle);
+    
+    msg := "La distance entre pince et rRetrait est: " + NumToStr(dist, 0) + "mm";
+
     TPWrite msg;
 
 ENDPROC
-
-!**************************************************************************************
-
-!**************************************************************************************
+       
 ENDMODULE
