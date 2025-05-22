@@ -63,12 +63,11 @@ MODULE Exemple_PRojet1_Yumi
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
 PROC main()
+	! 1) Initialisation :
+	init;
     
     ValidateRetrait;
     
-	! 1) Initialisation :
-	init;
-     
 	! Deplacement a la position de repos
 	MoveJ rRetrait, HighSpeed, fine, wi_tGripper\wobj:=wobj0;
 
@@ -212,14 +211,21 @@ ENDPROC
 
 
 PROC ValidateRetrait()
-    VAR num dist;
-    VAR robtarget posRef;  
-    VAR robtarget posAct;
     
+    VAR pos pos_rRetrait;
+    VAR pos pos_Actuelle;
+    VAR num dist := 4 + 3;
+    
+!    VAR robtarget tmpRetrait := rRetrait;
+
+!    VAR pos pos_Actuelle := CPos(\Tool:=wi_tGripper);
+!    VAR pos pos_rRetrait := rRetrait.trans;
+
     ! get current gripper position in rRetrait frame
-    ! posAct := CRobT(\Tool:=wi_tGripper, \WObj:=wobj0);
+    ! pos_Actuelle := CRobT(\Tool:=wi_tGripper, \WObj:=wobj0);
     
-    VAR string msg := "This is a test Message";
+!    VAR string msg := "This is a INITIAL test Message" + NumToStr(dist, 0);
+    VAR string msg := "This is a INITIAL test Message";
     TPWrite msg;
 
 ENDPROC
