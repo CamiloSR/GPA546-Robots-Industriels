@@ -47,7 +47,6 @@ MODULE Demo
   VAR num dist;
   VAR string heure;
   VAR string msg;
-  VAR bool restart := FALSE;
 
   ! Donnees de type constante
   CONST num Epaisseur:=1; ! Épaisseur d'un bloc (en pouces)
