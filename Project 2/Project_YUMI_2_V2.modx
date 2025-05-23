@@ -1,1 +1,285 @@
+MODULE Demo
 
+!@@@@@@@@@@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@@@@@@
+! Pour ouvrir la pince sur le simulateur: Pince_Ouvre;
+! Pour fermer la pince sur le simulateur: Pince_Ferme;
+! Pour ouvrir la pince sur le vrai robot Yumi: g_GripOut;
+! Pour fermer la pince sur le vrai robot Yumi: g_GripIn;
+!@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+! -------------------------------------------------------------------------------------
+! Programme : Demo
+! Auteurs : _______________ ET ______________
+! Date : _________________
+! Révision : ________________
+!
+! Description :
+! Ce programme permet de prendre deux blocs dans une glissoire et de les
+! superposer sur une table de travail, avec les trous dans le même sens.
+! -------------------------------------------------------------------------------------
+
+  ! Données de l'outil (pince) : actif, position TCP, orientation, masse, centre de gravité, inertie
+  PERS tooldata wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
+
+
+  ! "Positions" à peufiner sur le vrai robot
+  
+  ! Position cible "Crayon" à ajuster : position XYZ, orientation quaternion, configuration robot, valeur d’extaxe
+  PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  ! Position cible "Glissoire" : même structure que ci-dessus
+  PERS robtarget rGlissoire:=[[-193.434,277.819,65.0723],[0.212106,-0.671728,0.677924,0.210267],[0,0,2,5],[-88.7724,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  ! Position de repli du robot en coordonnées articulaires
+  PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  ! Position cible "Dépôt" pour déposer un objet
+  PERS robtarget rDepot:=[[-168.12,-271.04,18.04],[0.00559104,0.761781,0.647807,0.00180707],[1,-1,1,5],[-13.129,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  
+! Donnees de type position enseignees sur le Robot REEL A0610
+!  PERS robtarget rGlissoire:=[[-198.06,298.21,69.39],[0.191697,-0.682156,0.666204,0.232568],[0,-2,-1,4],[-45.0214,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rDepot:=[[-375.57,-183.03,38.56],[0.0317796,-0.759987,-0.647212,0.0502556],[0,0,-1,4],[-13.1289,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+  
+  ! Donnees de type "positions" calculées
+  VAR robtarget rDepot2;
+  VAR pos pos_rRetrait;
+  VAR pos pos_Actuelle;
+  VAR num dist;
+  VAR string heure;
+  VAR string msg;
+  VAR btnres answer;
+
+  ! Donnees de type constante
+  CONST num Epaisseur:=1; ! Épaisseur d'un bloc (en pouces)
+  CONST num PouceToMM:=25.4; ! Facteur de conversion
+  CONST num Decalage:=200; ! Distance d'approche ou de retrait (mm)
+
+  ! Données de type variable
+  VAR num EpaisMM:=0;  
+  
+
+  ! Vitesse d'approche et de retrait (mm/sec)
+  CONST speeddata LowSpeed:=[250,500,5000,1000];
+  
+  ! Vitesse maximale du robot (mm/sec)
+  CONST speeddata HighSpeed:=[1000,500,5000,1000];
+
+  ! Etat des entrees/sorties
+  CONST dionum Ouverte:=0;
+  CONST dionum Fermee:=1;
+  CONST dionum Retracte:=0;
+  CONST dionum Extension:=1;
+
+! -------------------------------------------------------------------------------------
+! Procedure : main
+! -------------------------------------------------------------------------------------
+PROC main()
+    
+	! 1) Initialisation :
+	init;
+    
+    ValidateRetrait;
+    
+    
+	! Deplacement à retrait
+	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
+
+	! 2) Calculs :
+	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
+	rDepot2 := Offs(rDepot,0,0,EpaisMM);
+
+	! 3) Déplacement du premier bloc :
+	! Prise du bloc dans le glissoire
+	Prise;
+	! Dépôt du bloc 1 à la localisation rDepot :
+	Depot(rDepot);
+
+	! 4) Déplacement du deuxième bloc :
+	! Prise du bloc dans le glissoire
+    Prise;
+	! Dépôt du bloc 2 à la localisation rDepot :
+	Depot(rDepot2);
+    
+	! 5) Retourner à retrait
+	MoveAbsJ jRetrait,HighSpeed,z50,tPince\wobj:=wobj0;
+	
+	Pince_Ouvre;
+    SetDO CabinetIO_0_DO16,1; ! ramasse-les-blocs dans la simulation
+    WaitTime 2; 
+    SetDO CabinetIO_0_DO16,0; ! ramasse-les-blocs dans la simulation
+    
+ENDPROC
+
+! -------------------------------------------------------------------------------------
+! Procedure : init
+! -------------------------------------------------------------------------------------
+PROC init()
+    
+    ! Initialisation du Smart gripper
+    !g_Calibrate \Jog;
+    G_init \Calibrate;
+    
+	VelSet 25,1000; ! Limitation imposée pour la sécurité, obligatoire
+
+	SetDO CabinetIO_0_DO9_FV0101, Retracte; ! Rentrer le vérin
+	 
+    ! Ouvrir la pince
+    Pince_Ouvre;
+    WaitTime 2;
+    
+ENDPROC
+
+! -------------------------------------------------------------------------------------
+! Procédure : Prise
+! Description : S'approcher de la glissoire, attendre une pièce dans la glissoire,
+! l'indexer, la prendre de manière sécuritaire
+! -------------------------------------------------------------------------------------
+PROC Prise()
+
+    VAR robtarget rGlissoireCalc;
+    
+    ! Vérification de la présence d'un bloc dans la glissoire
+	IF CabinetIO_0_DI9_ZS0101 = 0 THEN
+		TPErase;
+		TPWrite "Aucun bloc dans la glissoire";
+		TPWrite "Placer deux blocs et remettre en mode AUTO";
+		WaitDI CabinetIO_0_DI9_ZS0101, 1; ! Attente d'un bloc
+		Waittime 1; ! attente que le bloc se stabilise
+	ENDIF
+    
+    ! Prendre le bloc de la même façon par rapport au trou
+    IF CabinetIO_0_DI10_ZS0102 = 1 THEN
+    	rGlissoireCalc := RelTool(rGlissoire, 0, 0, 0 \Rz := 180);
+        rGlissoireCalc.robconf.cf6 := 0;
+    ELSE
+    	rGlissoireCalc := rGlissoire;
+    ENDIF
+    
+    ! Préhension du bloc
+    ConfJ \Off;
+    ConfL \Off;
+    MoveAbsJ jRetrait, HighSpeed, z50,tPince\wobj:=wobj0;
+	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\wobj:=wobj0;
+	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Pousser le bloc
+	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Attendre que le vérin soit complètement sorti
+	MoveL rGlissoireCalc, LowSpeed, fine, tPince\wobj:=wobj0;
+	
+	SetDO CabinetIO_0_DO9_FV0101, Retracte;
+    !WAITDI CabinetIO_0_DI14_ZS0104,0;
+	 WAITDI CabinetIO_0_DI13_ZS0103,1;
+    !g_GripIn; ! Fermer la pince
+    Pince_Ferme;
+    
+	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\wobj:=wobj0;
+	
+ENDPROC
+
+! -------------------------------------------------------------------------------------
+! Procédure : Depot
+! Argument : Reçoit un robtarget indiquant où placer un bloc, avec une approche et
+! un dégagement.
+! -------------------------------------------------------------------------------------
+PROC Depot(robtarget rPosDepot)
+
+    ! Même si rPosDepot a élé enseigné, en mettant les conf à Off, le robot fait
+    ! moins de mouvements inutiles
+    ConfJ \Off;
+	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\wobj:=wobj0;
+    ConfL \Off;
+	MoveL rPosDepot, LowSpeed, fine, tPince;
+	
+    !g_GripOut;! Ouvrir la pince
+    !g_stop;
+    Pince_Ouvre;
+	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\wobj:=wobj0;
+
+ENDPROC
+
+! -------------------------------------------------------------------------------------
+! Utilisez ces deux procédures pour fermer ou ouvrir la pince de Yumi.
+! Sur le vrai robot, utilisez les commandes g_GripIn et g_GripOut
+! -------------------------------------------------------------------------------------
+PROC Pince_Ferme()
+    SetDO custom_DO_0_gClose,1;
+    SetDO custom_DO_1_gOpen,0;
+    !g_GripIn;
+    WaitTime 1.5;
+ENDPROC
+   
+PROC Pince_Ouvre()
+     SetDO custom_DO_1_gOpen,1;
+     SetDO custom_DO_0_gClose,0;
+     !g_GripOut;
+     WaitTime 1.5;
+ENDPROC
+
+
+PROC ValidateRetrait()
+    
+    ! Obtenir les positions
+    pos_rRetrait := rRetrait.trans;
+    pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=wobj0);
+    
+    ! Calcul de la distance entre les positions
+    dist := Distance(pos_rRetrait, pos_Actuelle);
+    
+    ! Vérification de la distance
+    IF dist <= 50 THEN
+        ! Validation réussie : allumer la lampe bleue brièvement sans attendre
+        msg := "Distance entre pince et rRetrait est: " + NumToStr(dist, 0) + "mm";
+!        SetDO CabinetIO_0_DO16, 1; ! Lampe bleue
+!        WaitTime \InPar 2;         ! Attente en arrière-plan
+!        SetDO CabinetIO_0_DO16, 0;
+    ELSE
+        ! Validation échouée : afficher un message et allumer lampe orange
+        heure := CTime();
+        
+!        SetDO CabinetIO_0_DO17, 1; ! Lampe orange
+!        WaitTime 5;
+!        SetDO CabinetIO_0_DO17, 0;
+!        Stop; ! Arrêt immédiat du programme
+
+!        msg := heure + " - ERREUR : distance pince - rRetrait: " + NumToStr(dist, 1) + "mm Doit être ≤ 50 mm";
+!        TPWrite msg;
+        
+        UIMsgBox
+            \Header:="ERREUR de Distance",
+            heure
+            \MsgLine2:="La distance entre la pince et la position rRetrait est :" + NumToStr(dist, 1) + "mm" 
+            \MsgLine3:="La distance doit être ≤ 50 mm"
+            \MsgLine4:="S'il vous plaît, approchez la pince à la position retrait de au moins 50mm"
+            \MsgLine5:="et réinitialisez le programme!"
+            \Buttons:=btnOKCancel
+            \Icon:=iconWarning
+            \Result:=answer;
+        
+        IF answer = resCancel main;
+        IF answer = resOK THEN 
+            TPWrite "Arrêt du programme.";
+            Stop;
+        ENDIF
+
+    ENDIF
+
+ENDPROC
+
+
+PROC message_number()
+    VAR num userInput;
+
+    ! Demander à l'opérateur d'entrer un nombre
+    TPReadNum userInput, "Veuillez indiquer le nombre de blocs à palettiser (min 3 max 7):";
+
+    ! Vérifier si le nombre est dans la plage valide
+    IF userInput < 3 OR userInput > 7 THEN
+        TPWrite "Le nombre doit être entre 3 et 7.";
+        message_number; ! Re-demander l'entrée
+    ELSE
+        ! Afficher le nombre saisi
+        TPWrite "Le nombre de blocs à palettiser est: " \Num:=userInput;
+        main;
+    ENDIF
+ENDPROC
+
+       
+ENDMODULE
