@@ -45,6 +45,7 @@ MODULE Demo
   VAR pos pos_rRetrait;
   VAR pos pos_Actuelle;
   VAR num dist;
+  VAR string heure;
   VAR string msg;
 
   ! Donnees de type constante
@@ -230,7 +231,8 @@ PROC ValidateRetrait()
 !        SetDO CabinetIO_0_DO16, 0;
     ELSE
         ! Validation échouée : afficher un message et allumer lampe orange
-        msg := "ERREUR : distance entre pince et rRetrait est = " + NumToStr(dist, 1) + " mm. Doit être ≤ 50 mm.";
+        heure := CTime();
+        msg := heure + "ERREUR : distance pince -> rRetrait: " + NumToStr(dist, 1) + "mm Doit être ≤ 50 mm.";
         TPWrite msg;
 
 !        SetDO CabinetIO_0_DO17, 1; ! Lampe orange
