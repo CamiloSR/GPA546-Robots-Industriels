@@ -96,6 +96,7 @@ PROC main()
 	Prise;
 	! Dépôt du bloc 1 à la localisation rDepot :
 	Depot(rDepot);
+    TPWrite "Bloc 1 déposé correctement";
 
 	! 4) Déplacement des autres blocs :
     
@@ -107,7 +108,7 @@ PROC main()
         rDepotArray{i} := RelTool(rDepot, -EpaisMM* 1.1 * i, 0, 0);
         Depot(rDepotArray{i});
         
-        TPWrite "Bloc " + NumToStr(i, 0) + "Depose Correctement";
+        TPWrite "Bloc " + NumToStr(i, 0) + " déposé correctement";
     ENDFOR	
     
 	! 5) Retourner à retrait
