@@ -245,23 +245,19 @@ PROC ValidateRetrait()
         UIMsgBox
             \Header:="ERREUR de Distance",
             heure
-            \MsgLine2:="La distance entre pince et rRetrait est :" + NumToStr(dist, 1) + "mm"
-            \MsgLine3:="Doit être ≤ 50 mm"
+            \MsgLine2:="La distance entre la position pince et la position rRetrait est :"
+            \MsgLine3:=NumToStr(dist, 1) + "mm, Elle doit être ≤ 50 mm"
             \MsgLine4:="S'il vous plaît, approchez la pince à la position retrait de au moins 50mm"
             \MsgLine5:="et réinitialisez le programme!"
             \Buttons:=btnOKCancel
             \Icon:=iconWarning
             \Result:=answer;
         
-        IF answer = resOK OR answer = resCancel THEN
-            WaitTime 5;
-            main;
-        ENDIF
-        IF answer = resUnkwn THEN
-            TPWrite "Aucune réponse opérateur. Arrêt du programme.";
+        IF answer = resCancel main;
+        IF answer = resOK THEN 
+            TPWrite "Arrêt du programme.";
             Stop;
         ENDIF
-
 
     ENDIF
 
