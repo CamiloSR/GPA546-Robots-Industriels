@@ -47,6 +47,7 @@ MODULE Demo
   VAR num dist;
   VAR string heure;
   VAR string msg;
+  VAR btnres answer;
 
   ! Donnees de type constante
   CONST num Epaisseur:=1; ! Épaisseur d'un bloc (en pouces)
@@ -232,16 +233,36 @@ PROC ValidateRetrait()
     ELSE
         ! Validation échouée : afficher un message et allumer lampe orange
         heure := CTime();
-        msg := heure + " - ERREUR : distance pince - rRetrait: " + NumToStr(dist, 1) + "mm Doit être ≤ 50 mm";
-        TPWrite msg;
-
+        
 !        SetDO CabinetIO_0_DO17, 1; ! Lampe orange
 !        WaitTime 5;
 !        SetDO CabinetIO_0_DO17, 0;
-
 !        Stop; ! Arrêt immédiat du programme
-        WaitTime 5;
-        main;  ! Relance la procédure principale
+
+!        msg := heure + " - ERREUR : distance pince - rRetrait: " + NumToStr(dist, 1) + "mm Doit être ≤ 50 mm";
+!        TPWrite msg;
+        
+        UIMsgBox
+            \Header:="ERREUR de Distance",
+            heure
+            \MsgLine2:="La distance entre pince et rRetrait est :" + NumToStr(dist, 1) + "mm"
+            \MsgLine3:="Doit être ≤ 50 mm"
+            \MsgLine4:="S'il vous plaît, approchez la pince à la position retrait de au moins 50mm"
+            \MsgLine5:="et réinitialisez le programme!"
+            \Buttons:=btnOKCancel
+            \Icon:=iconWarning
+            \Result:=answer;
+        
+        IF answer = resOK OR answer = resCancel THEN
+            WaitTime 5;
+            main;
+        ENDIF
+        IF answer = resUnkwn THEN
+            TPWrite "Aucune réponse opérateur. Arrêt du programme.";
+            Stop;
+        ENDIF
+
+
     ENDIF
 
 ENDPROC
