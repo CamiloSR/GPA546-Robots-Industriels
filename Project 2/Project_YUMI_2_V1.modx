@@ -32,7 +32,7 @@ MODULE Demo
   PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Position cible "Dépôt" pour déposer un objet
-  PERS robtarget rDepot:=[[-375.57,-183.03,38.56],[0.0317796,-0.759987,-0.647212,0.0502556],[0,0,-1,4],[-13.1289,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
 ! Donnees de type position enseignees sur le Robot REEL A0610
 !  PERS robtarget rGlissoire:=[[-198.06,298.21,69.39],[0.191697,-0.682156,0.666204,0.232568],[0,-2,-1,4],[-45.0214,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -232,14 +232,16 @@ PROC ValidateRetrait()
     ELSE
         ! Validation échouée : afficher un message et allumer lampe orange
         heure := CTime();
-        msg := heure + "ERREUR : distance pince -> rRetrait: " + NumToStr(dist, 1) + "mm Doit être ≤ 50 mm.";
+        msg := heure + " - ERREUR : distance pince - rRetrait: " + NumToStr(dist, 1) + "mm Doit être ≤ 50 mm";
         TPWrite msg;
 
 !        SetDO CabinetIO_0_DO17, 1; ! Lampe orange
 !        WaitTime 5;
 !        SetDO CabinetIO_0_DO17, 0;
 
-        Stop; ! Arrêt immédiat du programme
+!        Stop; ! Arrêt immédiat du programme
+        WaitTime 2;
+        main;  ! Relance la procédure principale
     ENDIF
 
 ENDPROC
