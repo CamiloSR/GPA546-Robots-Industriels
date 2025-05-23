@@ -47,6 +47,7 @@ MODULE Demo
   VAR num dist;
   VAR string heure;
   VAR string msg;
+  VAR bool restart := FALSE;
 
   ! Donnees de type constante
   CONST num Epaisseur:=1; ! Épaisseur d'un bloc (en pouces)
@@ -240,7 +241,7 @@ PROC ValidateRetrait()
 !        SetDO CabinetIO_0_DO17, 0;
 
 !        Stop; ! Arrêt immédiat du programme
-        WaitTime 2;
+        WaitTime 5;
         main;  ! Relance la procédure principale
     ENDIF
 
