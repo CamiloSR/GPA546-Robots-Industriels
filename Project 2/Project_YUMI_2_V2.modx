@@ -41,13 +41,16 @@ MODULE Demo
 
   
   ! Donnees de type "positions" calculées
-  VAR robtarget rDepot2;
   VAR pos pos_rRetrait;
   VAR pos pos_Actuelle;
   VAR num dist;
   VAR string heure;
   VAR string msg;
   VAR btnres answer;
+  VAR robtarget rDepotArray{7}; ! Max 7 robtargets
+  VAR num num_of_blocs;
+  VAR num i;
+
 
   ! Donnees de type constante
   CONST num Epaisseur:=1; ! Épaisseur d'un bloc (en pouces)
@@ -80,13 +83,13 @@ PROC main()
     
     ValidateRetrait;
     
-    
 	! Deplacement à retrait
 	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
-
+    
+    message_number;
+    
 	! 2) Calculs :
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
-	rDepot2 := Offs(rDepot,0,0,EpaisMM);
 
 	! 3) Déplacement du premier bloc :
 	! Prise du bloc dans le glissoire
@@ -94,11 +97,18 @@ PROC main()
 	! Dépôt du bloc 1 à la localisation rDepot :
 	Depot(rDepot);
 
-	! 4) Déplacement du deuxième bloc :
-	! Prise du bloc dans le glissoire
-    Prise;
-	! Dépôt du bloc 2 à la localisation rDepot :
-	Depot(rDepot2);
+	! 4) Déplacement des autres blocs :
+    
+    ! Initialiser les robtargets dans le tableau
+    FOR i FROM 1 TO num_of_blocs DO
+        ! Prise du bloc dans le glissoire
+        Prise;
+        ! Dépôt du bloc i à la localisation rDepot i:
+        rDepotArray{i} := RelTool(rDepot, -EpaisMM* 1.1 * i, 0, 0);
+        Depot(rDepotArray{i});
+        
+        TPWrite "Bloc " + NumToStr(i, 0) + "Depose Correctement";
+    ENDFOR	
     
 	! 5) Retourner à retrait
 	MoveAbsJ jRetrait,HighSpeed,z50,tPince\wobj:=wobj0;
@@ -265,21 +275,20 @@ ENDPROC
 
 
 PROC message_number()
-    VAR num userInput;
-
     ! Demander à l'opérateur d'entrer un nombre
-    TPReadNum userInput, "Veuillez indiquer le nombre de blocs à palettiser (min 3 max 7):";
+    TPReadNum num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser (min 3 max 7):";
 
     ! Vérifier si le nombre est dans la plage valide
-    IF userInput < 3 OR userInput > 7 THEN
+    IF num_of_blocs < 3 OR num_of_blocs > 7 THEN
         TPWrite "Le nombre doit être entre 3 et 7.";
         message_number; ! Re-demander l'entrée
     ELSE
-        ! Afficher le nombre saisi
-        TPWrite "Le nombre de blocs à palettiser est: " \Num:=userInput;
-        main;
+        TPWrite "Le nombre de blocs à palettiser est: " \Num:=num_of_blocs;        
     ENDIF
 ENDPROC
+
+
+
 
        
 ENDMODULE
