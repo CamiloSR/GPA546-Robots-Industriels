@@ -83,13 +83,13 @@ PROC main()
     
 	! 1) Initialisation :
 	init;
-    
+    TPErase;
     ValidateRetrait;
     
 	! Deplacement à retrait
 	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
     
-    message_number;
+    select_num_blocs;
     
 	! 2) Calculs :
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion en mm
@@ -278,17 +278,25 @@ PROC ValidateRetrait()
 ENDPROC
 
 
-PROC message_number()
-    ! Demander à l'opérateur d'entrer un nombre
-    TPReadNum num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser (min 3 max 7):";
+PROC select_num_blocs()
+    VAR num num_of_blocs;
+    VAR errnum errvar;
 
-    ! Vérifier si le nombre est dans la plage valide
-    IF num_of_blocs < 3 OR num_of_blocs > 7 THEN
-        TPWrite "Le nombre doit être entre 3 et 7.";
-        message_number; ! Re-demander l'entrée
-    ELSE
-        TPWrite "Le nombre de blocs à palettiser est: " \Num:=num_of_blocs;        
+    ! Affiche le menu avec les touches de fonction (TPReadFK)
+    TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser:",
+        "3", "4", "5", "6", "7",
+        \MaxTime:=60, \BreakFlag:=errvar;
+
+    ! Vérifie si une interruption est survenue
+    IF errvar = ERR_TP_MAXTIME THEN
+        TPWrite "Temps écoulé sans réponse.";
+        Stop;
     ENDIF
+
+    ! Conversion en entier et affichage
+    num_of_blocs := num_of_blocs + 2;  ! TPFK7 is key 3 => index 7 => 7 - 5 = 2 offset
+    TPWrite "Le nombre de blocs à palettiser est: " \Num:=num_of_blocs;
+
 ENDPROC
 
        
