@@ -28,7 +28,7 @@ MODULE Demo
   PERS robtarget rGlissoire:=[[-193.434,277.819,65.0723],[0.212106,-0.671728,0.677924,0.210267],[0,0,2,5],[-88.7724,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Robot retract position in joint coordinates
   PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[-298.20,-128.81,202.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[-327.80,-237.72,264.99],[0.0357309,-0.818372,-0.54703,0.172478],[1,-1,1,5],[-78.1561,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Deposit" position for placing an object
   PERS robtarget rDepot:=[[-168.12,-271.04,18.04],[0.00559104,0.761781,0.647807,0.00180707],[1,-1,1,5],[-13.129,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
@@ -50,6 +50,7 @@ MODULE Demo
   VAR btnres answer;
   VAR robtarget rDepotArray{7}; ! Max 7 robtargets
   VAR num num_of_blocs;
+  VAR errnum errvar;
   VAR num i;
 
 
@@ -104,10 +105,7 @@ PROC main()
     FOR i FROM 1 TO num_of_blocs DO
         ! Pick block from chute
         Prise;
-        ! Deposit block i at rDepot i:
-        rDepotArray{i} := RelTool(rDepot, -EpaisMM* 1.1 * i, 0, 0);
         Depot(rDepotArray{i});
-        
         TPWrite "Block " + NumToStr(i, 0) + " deposited successfully";
     ENDFOR	
     
@@ -276,9 +274,6 @@ ENDPROC
 ! Procedure: select_num_blocks
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
-    VAR num num_of_blocs;
-    VAR errnum errvar;
-
     ! Display menu with function keys (TPReadFK)
     TPReadFK num_of_blocs, "Please specify number of blocks to palletize:",
         "3", "4", "5", "6", "7",
@@ -293,6 +288,11 @@ PROC select_num_blocs()
     ! Convert to integer and display
     num_of_blocs := num_of_blocs + 2;  ! TPFK7 is key 3 => index 7 => 7 - 5 = 2 offset
     TPWrite "Number of blocks to palletize is: " \Num:=num_of_blocs;
+    
+    FOR i FROM 1 TO num_of_blocs DO
+        ! Deposit block i at rDepot i:
+        rDepotArray{i} := RelTool(rDepot, -EpaisMM*i*1.6, 0, 0);
+    ENDFOR
 
 ENDPROC
 
