@@ -60,7 +60,7 @@ MODULE Demo
   CONST num Decalage:=200; ! Approach or retract distance (mm)
 
   ! Variable data
-  VAR num EpaisMM:=0;  
+  VAR num EpaisMM;  
   
   ! Approach and retract speed (mm/sec)
   CONST speeddata LowSpeed:=[250,500,5000,1000];
@@ -87,24 +87,16 @@ PROC main()
 	! Move to retract
 	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
     
-    select_num_blocs;
-    
-	! 2) Calculations:
+    ! 2) Calculations:
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion to mm
-
-	! 3) Move of the first block:
-	! Pick block from chute
-	Prise;
-	! Deposit the first block at rDepot:
-	Depot(rDepot);
-    TPWrite "Block 1 deposited successfully";
-
-	! 4) Move of the other blocks:
     
+	! 3) Move blocks:
+    select_num_blocs;
     ! Initialize robtargets in the array
     FOR i FROM 1 TO num_of_blocs DO
         ! Pick block from chute
         Prise;
+        ! Deposit the block at rDepot {i}:
         Depot(rDepotArray{i});
         TPWrite "Block " + NumToStr(i, 0) + " deposited successfully";
     ENDFOR	
@@ -247,7 +239,6 @@ PROC ValidateRetrait()
 !        Stop; ! Immediate program stop
 
 !        msg := heure + " - ERROR: gripper to rRetract distance: " + NumToStr(dist, 1) + "mm Must be ≤ 50 mm";
-!        TPWrite msg;
         
         UIMsgBox
             \Header:="ERREUR de Distance",
@@ -289,9 +280,11 @@ PROC select_num_blocs()
     num_of_blocs := num_of_blocs + 2;  ! TPFK7 is key 3 => index 7 => 7 - 5 = 2 offset
     TPWrite "Number of blocks to palletize is: " \Num:=num_of_blocs;
     
-    FOR i FROM 1 TO num_of_blocs DO
+    rDepotArray{1} := rDepot;
+    
+    FOR i FROM 2 TO num_of_blocs DO
         ! Deposit block i at rDepot i:
-        rDepotArray{i} := RelTool(rDepot, -EpaisMM*i*1.6, 0, 0);
+        rDepotArray{i} := RelTool(rDepot, -EpaisMM*i*2, 0, 0);
     ENDFOR
 
 ENDPROC
