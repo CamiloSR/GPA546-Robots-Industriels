@@ -98,7 +98,7 @@ PROC main()
         Prise;
         ! Deposit the block at rDepot {i}:
         Depot(rDepotArray{i});
-        TPWrite "Block " + NumToStr(i, 0) + " deposited successfully";
+        TPWrite heure + " - Bloc " + NumToStr(i, 0) + " déposé avec succès";
     ENDFOR	
     
 	! 5) Return to retract
@@ -141,8 +141,8 @@ PROC Prise()
     ! Check presence of a block in the chute
 	IF CabinetIO_0_DI9_ZS0101 = 0 THEN
 		TPErase;
-		TPWrite "No block in the chute";
-		TPWrite "Place two blocks and switch to AUTO mode";
+		TPWrite "Pas de bloc dans la Chute" ;
+        TPWrite "Placez deux blocs et passez en mode AUTO" ;
 		WaitDI CabinetIO_0_DI9_ZS0101, 1; ! Wait for block
 		Waittime 1; ! Wait for block to stabilize
 	ENDIF
@@ -185,11 +185,11 @@ PROC Depot(robtarget rPosDepot)
 	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\wobj:=wobj0;
     ConfL \Off;
 	MoveL rPosDepot, LowSpeed, fine, tPince;
-	
+	heure := CTime();
     ! Open the gripper
     Pince_Ouvre;
 	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\wobj:=wobj0;
-
+    
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -214,7 +214,6 @@ ENDPROC
 ! Procedure: ValidateRetract
 ! -------------------------------------------------------------------------------------
 PROC ValidateRetrait()
-    
     ! Get positions
     pos_rRetrait := rRetrait.trans;
     pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=wobj0);
@@ -226,19 +225,14 @@ PROC ValidateRetrait()
     IF dist <= 50 THEN
         ! Validation successful: briefly turn on the blue light without waiting
         msg := "Distance entre pince et rRetrait est: " + NumToStr(dist, 0) + "mm";
-!        SetDO CabinetIO_0_DO16, 1; ! Blue light
-!        WaitTime \InPar 2;         ! Background wait
-!        SetDO CabinetIO_0_DO16, 0;
+        SetDO CabinetIO_0_DO4_JB01_LampBlu, 1;
+        WaitTime \InPos,2;         ! Background wait
+        SetDO CabinetIO_0_DO4_JB01_LampBlu, 0;
     ELSE
         ! Validation failed: display a message and turn on the orange light
-        heure := CTime();
-        
-!        SetDO CabinetIO_0_DO17, 1; ! Orange light
-!        WaitTime 5;
-!        SetDO CabinetIO_0_DO17, 0;
-!        Stop; ! Immediate program stop
-
-!        msg := heure + " - ERROR: gripper to rRetract distance: " + NumToStr(dist, 1) + "mm Must be ≤ 50 mm";
+        SetDO CabinetIO_0_DO5_JB01_LampOr, 1;
+        WaitTime \InPos,5;
+        SetDO CabinetIO_0_DO5_JB01_LampOr, 0;
         
         UIMsgBox
             \Header:="ERREUR de Distance",
@@ -266,19 +260,19 @@ ENDPROC
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
     ! Display menu with function keys (TPReadFK)
-    TPReadFK num_of_blocs, "Please specify number of blocks to palletize:",
+    TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
 
     ! Check if an interruption occurred
     IF errvar = ERR_TP_MAXTIME THEN
-        TPWrite "Time elapsed without response.";
+        TPWrite "Temps écoulé sans réponse.";
         Stop;
     ENDIF
 
     ! Convert to integer and display
     num_of_blocs := num_of_blocs + 2;  ! TPFK7 is key 3 => index 7 => 7 - 5 = 2 offset
-    TPWrite "Number of blocks to palletize is: " \Num:=num_of_blocs;
+    TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
     rDepotArray{1} := rDepot;
     
