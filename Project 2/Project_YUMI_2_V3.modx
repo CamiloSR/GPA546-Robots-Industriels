@@ -30,7 +30,7 @@ MODULE Demo
   PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[-327.80,-237.72,264.99],[0.0357309,-0.818372,-0.54703,0.172478],[1,-1,1,5],[-78.1561,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Deposit" position for placing an object
-  PERS robtarget rDepot:=[[-168.12,-271.04,42.86],[0.00559119,0.761782,0.647807,0.00180703],[1,-1,1,5],[-13.129,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  PERS robtarget rDepot:=[[-129.86,-340.40,18.76],[0.00467908,0.504212,0.86356,0.00355758],[1,-2,1,5],[-13.1288,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
   PERS wobjdata WobjFeuille;
   PERS wobjdata WobjTable;
