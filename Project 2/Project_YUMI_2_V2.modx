@@ -22,19 +22,19 @@ MODULE Demo
   PERS wobjdata WobjTable:=[FALSE, TRUE, "",[[-488.45, 121.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[0,0,0],[1,0,0,0]]];
 
     ! Tool data (gripper): active, TCP position, orientation, mass, center of gravity, inertia
-  PERS tooldata wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
+!  PERS tooldata wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
   
 
   ! "Positions" to fine-tune on the real robot
   ! Target "Crayon" position to adjust: XYZ position, quaternion orientation, robot configuration, external axis value
   PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Chute" position: same structure as above
-  PERS robtarget rGlissoire:=[[-188.52,302.43,79.52],[0.249782,-0.665152,-0.655644,-0.255562],[0,2,1,4],[-107.701,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rGlissoire:=[[-200.04,300.81,68.56],[0.316496,0.00225246,-0.948486,-0.0141236],[0,0,-1,5],[-108.874,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Robot retract position in joint coordinates
   PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[-290.45,-136.58,85.36],[0.0779327,-0.0418299,-0.996074,-0.00354673],[0,3,0,5],[-108.179,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[218.65,152.50,95.93],[0.0108651,-0.0393009,-0.9987,-0.0305891],[0,0,-1,4],[-105.542,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Target "Deposit" position for placing an object
-  PERS robtarget rDepot:=[[-168.12,-271.04,42.86],[0.00559119,0.761782,0.647807,0.00180703],[1,-1,1,5],[-13.129,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
 
   
 ! Position data taught on the REAL Robot A0610
@@ -75,6 +75,10 @@ MODULE Demo
   CONST dionum Fermee:=1;
   CONST dionum Retracte:=0;
   CONST dionum Extension:=1;
+  PERS robtarget rGlissoire10 := [[-197.52,296.26,68.46],[0.313178,-0.000804646,-0.949544,-0.0169006],[0,0,-1,5],[-111.435,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  
+
+  
 
 ! -------------------------------------------------------------------------------------
 ! Procedure: main
@@ -87,7 +91,7 @@ PROC main()
     ValidateRetrait;
     
 	! Move to retract
-	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
+	MoveAbsJ jRetrait, HighSpeed, fine, tPince\WObj:=WobjTable;
     
     ! 2) Calculations:
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion to mm
@@ -104,7 +108,7 @@ PROC main()
     ENDFOR	
     
 	! 5) Return to retract
-	MoveAbsJ jRetrait,HighSpeed,z50,tPince\wobj:=wobj0;
+	MoveAbsJ jRetrait,HighSpeed,z50,tPince\WObj:=WobjTable;
 	
 	Pince_Ouvre;
     SetDO CabinetIO_0_DO16,1; ! simulate block pickup
@@ -152,7 +156,7 @@ PROC Prise()
         elapsed := ClkRead(timer);  
         IF elapsed > 5 THEN
             ! retract to safe position
-            MoveAbsJ jRetrait, HighSpeed, z50, tPince\wobj:=wobj0;
+            MoveAbsJ jRetrait, HighSpeed, z50, tPince\WObj:=WobjTable;
             TPWrite "Avertissement : >5 s sans bloc – retour à rRetrait";
             ClkReset timer;       ! restart timeout
             ClkStart timer;
@@ -181,11 +185,11 @@ PROC Prise()
     ! Grasp the block
     ConfJ \Off;
     ConfL \Off;
-    MoveAbsJ jRetrait, HighSpeed, z50,tPince\wobj:=wobj0;
-	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\wobj:=wobj0;
+    MoveAbsJ jRetrait, HighSpeed, z50,tPince\WObj:=WobjTable;
+	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\WObj:=WobjTable;
 	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Push block
 	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Wait cylinder fully extended
-	MoveL rGlissoireCalc, LowSpeed, fine, tPince\wobj:=wobj0;
+	MoveL rGlissoireCalc, LowSpeed, fine, tPince\WObj:=WobjTable;
 	
 	SetDO CabinetIO_0_DO9_FV0101, Retracte;
     !WAITDI CabinetIO_0_DI14_ZS0104,0;
@@ -193,7 +197,7 @@ PROC Prise()
     !g_GripIn; ! Close gripper
     Pince_Ferme;
     
-	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\wobj:=wobj0;
+	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\WObj:=WobjTable;
     
 ENDPROC
 
@@ -205,13 +209,13 @@ PROC Depot(robtarget rPosDepot)
 
     ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
     ConfJ \Off;
-	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\wobj:=wobj0;
+	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\WObj:=WobjTable;
     ConfL \Off;
 	MoveL rPosDepot, LowSpeed, fine, tPince;
 	heure := CTime();
     ! Open the gripper
     Pince_Ouvre;
-	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\wobj:=wobj0;
+	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\WObj:=WobjTable;
     
 ENDPROC
 
@@ -220,16 +224,16 @@ ENDPROC
 ! On the real robot, use commands g_GripIn and g_GripOut
 ! -------------------------------------------------------------------------------------
 PROC Pince_Ferme()
-    SetDO custom_DO_0_gClose,1;
-    SetDO custom_DO_1_gOpen,0;
-    !g_GripIn;
+!    SetDO custom_DO_0_gClose,1;
+!    SetDO custom_DO_1_gOpen,0;
+    g_GripIn;
     WaitTime 1.5;
 ENDPROC
    
 PROC Pince_Ouvre()
-     SetDO custom_DO_1_gOpen,1;
-     SetDO custom_DO_0_gClose,0;
-     !g_GripOut;
+!     SetDO custom_DO_1_gOpen,1;
+!     SetDO custom_DO_0_gClose,0;
+     g_GripOut;
      WaitTime 1.5;
 ENDPROC
 
@@ -239,7 +243,7 @@ ENDPROC
 PROC ValidateRetrait()
     ! Get positions
     pos_rRetrait := rRetrait.trans;
-    pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=wobj0);
+    pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=WobjTable);
     
     ! Calculate distance between positions
     dist := Distance(pos_rRetrait, pos_Actuelle);
@@ -307,4 +311,3 @@ PROC select_num_blocs()
 ENDPROC
 
 ENDMODULE
-
