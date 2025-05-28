@@ -271,7 +271,7 @@ PROC ValidateRetrait()
         IF answer = resCancel main;
         IF answer = resOK THEN 
             TPWrite "Arrêt du programme.";
-            Stop;
+            Exit;
         ENDIF
 
     ENDIF
