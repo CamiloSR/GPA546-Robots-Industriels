@@ -30,7 +30,7 @@ MODULE Demo
   PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[-327.80,-237.72,264.99],[0.0357309,-0.818372,-0.54703,0.172478],[1,-1,1,5],[-78.1561,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Deposit" position for placing an object
-  PERS robtarget rDepot:=[[-168.12,-271.04,42.86],[0.00559119,0.761782,0.647807,0.00180703],[1,-1,1,5],[-13.129,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
   PERS wobjdata WobjFeuille;
   PERS wobjdata WobjTable;
@@ -276,32 +276,44 @@ PROC ValidateRetrait()
 
 ENDPROC
 
+
 ! -------------------------------------------------------------------------------------
 ! Procedure: select_num_blocks
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
-    ! Display menu with function keys (TPReadFK)
+    
+    VAR num angleDeg;
+    VAR num radius_apothem;
+    VAR num angle_rad;
+    VAR num hypotenuse;
+
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
 
-    ! Check if an interruption occurred
     IF errvar = ERR_TP_MAXTIME THEN
         TPWrite "Temps écoulé sans réponse.";
         Stop;
     ENDIF
 
-    ! Convert to integer and display
-    num_of_blocs := num_of_blocs + 2;  ! TPFK7 is key 3 => index 7 => 7 - 5 = 2 offset
+    num_of_blocs := num_of_blocs + 2;
     TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
-    rDepotArray{1} := rDepot;
+    angle_rad := 3.14159265359 / num_of_blocs;
+    radius_apothem := EpaisMM / (2 * Tan(angle_rad));
     
+    hypotenuse := Sqrt(2) * radius_apothem;
+
+    rDepotArray{1} := rDepot;
+  
     FOR i FROM 2 TO num_of_blocs DO
-        ! Deposit block i at rDepot i:
-        rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0);
-    ENDFOR
+        angleDeg := 360.0 / num_of_blocs * (i - 1);
+    
+        ! Translate and rotate from base position, using built-in \Rz (Z-axis rotation)
+        rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0 \Rz := angleDeg);
+    ENDFOR  
 
 ENDPROC
+
 
 ENDMODULE
