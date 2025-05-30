@@ -300,17 +300,11 @@ PROC select_num_blocs()
     TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
     ! Calculate positions for N blocks in a polygon pattern
-    FOR i FROM 1 TO num_of_blocs DO
-        angle_rad := (2 * 3.14159 * (i - 1)) / num_of_blocs;
-        
-        ! Offset from origin of WobjFeuille
-        posDepot := [ demiBloc * Cos(angle_rad), demiBloc * Sin(angle_rad), rDepot.trans.z ];
-
-        ! Orientation pointing outward
-        oriDepot := OrientZYX(0, 0, angle_rad * 180 / 3.14159);
-        
-        ! Store in robtarget array relative to WobjFeuille
-        rDepotArray{i} := [posDepot, oriDepot, rDepot.robconf, rDepot.extax];
+    FOR i FROM 2 TO num_of_blocs DO
+        angleDeg := 360.0 / num_of_blocs * (i - 1);
+    
+        ! Translate and rotate from base position, using built-in \Rz (Z-axis rotation)
+        rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0 \Rz := angleDeg);
     ENDFOR
 ENDPROC
 
