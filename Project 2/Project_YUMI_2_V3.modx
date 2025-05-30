@@ -8,10 +8,10 @@ MODULE Demo
 !@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 ! -------------------------------------------------------------------------------------
-! Program: Demo
-! Authors: _______________ AND ______________
-! Date: _________________
-! Revision: ________________
+! Programme : GPA546Lab2
+! Auteurs : Olivier Millette ET Camilo Serna
+! Date : Mai 28, 2025
+! Révision : V0.0
 !
 ! Description:
 ! This program picks up two blocks from a chute and stacks them on a work table with the holes aligned.
