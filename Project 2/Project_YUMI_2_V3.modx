@@ -30,10 +30,13 @@ MODULE Demo
   PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[-327.80,-237.72,264.99],[0.0357309,-0.818372,-0.54703,0.172478],[1,-1,1,5],[-78.1561,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Deposit" position for placing an object
-  PERS robtarget rDepot:=[[-129.86,-340.40,18.76],[0.00467908,0.504212,0.86356,0.00355758],[1,-2,1,5],[-13.1288,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
-  PERS wobjdata WobjFeuille;
-  PERS wobjdata WobjTable;
+  ! Target "Deposit" position for placing an object
+  PERS robtarget rFeuilleCentre:=[[-299.12,-20.77,17.88],[0.000943775,-0.712239,0.701922,-0.00452359],[0,-1,2,5],[-20.0513,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  
+  PERS wobjdata WobjFeuille:=[FALSE, TRUE, "",[[-488.45, 121.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[146.79,19.7958,-3.63954],[0.0216626,0.703359,0.710494,-0.00381495]]];
+  PERS wobjdata WobjTable:=[FALSE, TRUE, "",[[-488.45, 121.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[0,0,0],[1,0,0,0]]];
   
 ! Position data taught on the REAL Robot A0610
 !  PERS robtarget rGlissoire:=[[-198.06,298.21,69.39],[0.191697,-0.682156,0.666204,0.232568],[0,-2,-1,4],[-45.0214,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -58,6 +61,7 @@ MODULE Demo
   CONST num Epaisseur:=1; ! Thickness of a block (in inches)
   CONST num PouceToMM:=25.4; ! Conversion factor
   CONST num Decalage:=200; ! Approach or retract distance (mm)
+  CONST num LongeurMM := Epaisseur * 3 * PouceToMM;
 
   ! Variable data
   VAR num EpaisMM;  
@@ -276,17 +280,17 @@ PROC ValidateRetrait()
 
 ENDPROC
 
+
 ! -------------------------------------------------------------------------------------
 ! Procedure: select_num_blocks
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
-        ! Geometry constants
-    CONST num longBlocMM := 76.2;   ! 3 in
-    CONST num demiBloc := longBlocMM / 2;
-    VAR num angle_rad;
-    VAR pos posDepot;
-    VAR orient oriDepot;
     
+    VAR num angleDeg;
+    VAR num radius_apothem;
+    VAR num angle_rad;
+    VAR num hypotenuse;
+
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
@@ -296,16 +300,33 @@ PROC select_num_blocs()
         Stop;
     ENDIF
 
-    num_of_blocs := num_of_blocs + 2;  ! index adjustment
+    num_of_blocs := num_of_blocs + 2;
     TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
-    ! Calculate positions for N blocks in a polygon pattern
-    FOR i FROM 2 TO num_of_blocs DO
-        angleDeg := 360.0 / num_of_blocs * (i - 1);
+    angle_rad := 3.14159265359 / num_of_blocs;
+    radius_apothem := EpaisMM / (2 * Tan(angle_rad));
     
+    hypotenuse := Sqrt(2) * radius_apothem;
+
+    ! rDepotArray{1} := RelTool(rFeuilleCentre, 0, -(LongeurMM/2), 0 \Rz := 0);
+  
+    FOR i FROM 1 TO num_of_blocs DO
+        angleDeg := (360.0 / num_of_blocs) * (i - 1);
+        
+        rDepotArray{i} := RelTool(rFeuilleCentre, 0, -(LongeurMM/2), 0 \Rz := angleDeg);
+        
+!        ! Step 1: Rotate base around Z by angleDeg
+!        rDepotArray{i} := RelTool(rDepot, 0, 0, 0 \Rz := angleDeg);
+    
+!        ! Step 2: Move forward in rotated tool frame
+!        rDepotArray{i} := RelTool(rDepotArray{i}, 0, radius_apothem, 0);
+        
         ! Translate and rotate from base position, using built-in \Rz (Z-axis rotation)
-        rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0 \Rz := angleDeg);
+        ! rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0 \Rz := angleDeg);
     ENDFOR
+
+  
+
 ENDPROC
 
 
