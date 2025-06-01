@@ -10,16 +10,18 @@ MODULE Demo
 ! -------------------------------------------------------------------------------------
 ! Programme : GPA546Lab2
 ! Auteurs : Olivier Millette ET Camilo Serna
-! Date : Mai 28, 2025
+! Date : Juin 03, 2025
 ! Révision : V0.0
 !
 ! Description:
-! This program picks up two blocks from a chute and stacks them on a work table with the holes aligned.
+! This program picks up some blocks from a chute and stacks them on a work Following a pattern.
 ! -------------------------------------------------------------------------------------
 
-  ! Tool data (gripper): active, TCP position, orientation, mass, center of gravity, inertia
-  PERS tooldata wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
 
+  ! Tool data (gripper): active, TCP position, orientation, mass, center of gravity, inertia
+  PERS tooldata wi_tGripper;
+  PERS tooldata wi_tVacuum1st;
+  PERS tooldata t_Crayon;
 
   ! "Positions" to fine-tune on the real robot
   ! Target "Crayon" position to adjust: XYZ position, quaternion orientation, robot configuration, external axis value
@@ -33,7 +35,7 @@ MODULE Demo
   PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
   ! Target "Deposit" position for placing an object
-  PERS robtarget rFeuilleCentre:=[[-299.12,-20.77,17.88],[0.000943775,-0.712239,0.701922,-0.00452359],[0,-1,2,5],[-20.0513,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  PERS robtarget rFeuilleCentre:=[[-282.68,-167.88,17.59],[0.00438932,0.251763,0.967778,-0.00144448],[1,-1,0,5],[-20.0513,9E+9,9E+9,9E+9,9E+9,9E+9]];
   
   PERS wobjdata WobjFeuille:=[FALSE, TRUE, "",[[-358.45, 21.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[146.79,19.7958,-3.63954],[0.0216626,0.703359,0.710494,-0.00381495]]];
   PERS wobjdata WobjTable:=[FALSE, TRUE, "",[[-358.45, 21.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[0,0,0],[1,0,0,0]]];
@@ -55,13 +57,18 @@ MODULE Demo
   VAR num num_of_blocs;
   VAR errnum errvar;
   VAR num i;
+  VAR num angleDeg;
+  VAR num apothem;
+  VAR num angle_rad;
+  VAR num hypotenuse;
+  VAR num trans_totale;
 
 
   ! Constant data
   CONST num Epaisseur:=1; ! Thickness of a block (in inches)
   CONST num PouceToMM:=25.4; ! Conversion factor
   CONST num Decalage:=200; ! Approach or retract distance (mm)
-  CONST num LongeurMM := Epaisseur * 3 * PouceToMM;
+  CONST num LongeurMM := Epaisseur * 4 * PouceToMM;
 
   ! Variable data
   VAR num EpaisMM;  
@@ -82,6 +89,12 @@ MODULE Demo
 ! Procedure: main
 ! -------------------------------------------------------------------------------------
 PROC main()
+    
+    IF NOT RobOS() THEN
+      wi_tGripper:=[TRUE,[[0,0,136],[1,0,0,0]],[0.262,[8.2,11.7,52],[1,0,0,0],0.00021,0.00024,0.00009]];
+      wi_tVacuum1st:=[TRUE,[[63.5,18.5,37.5],[0.707106781,0,0.707106781,0]],[0.262,[8.6,11.7,52.7],[1,0,0,0],0.00021,0.00024,0.00009]];
+      t_Crayon:=[TRUE,[[118.5,18.5,37.5],[0.707107,0,0.707107,0]],[0.24,[8.2,12.5,48.1], [1,0,0,0],0.00022,0.00024,0.00009]];
+    ENDIF
     
 	! 1) Initialization:
 	init;
@@ -201,7 +214,6 @@ PROC Prise()
 	SetDO CabinetIO_0_DO9_FV0101, Retracte;
     !WAITDI CabinetIO_0_DI14_ZS0104,0;
 	 WAITDI CabinetIO_0_DI13_ZS0103,1;
-    !g_GripIn; ! Close gripper
     Pince_Ferme;
     
 	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\wobj:=wobj0;
@@ -231,16 +243,24 @@ ENDPROC
 ! On the real robot, use commands g_GripIn and g_GripOut
 ! -------------------------------------------------------------------------------------
 PROC Pince_Ferme()
-    SetDO custom_DO_0_gClose,1;
-    SetDO custom_DO_1_gOpen,0;
-    !g_GripIn;
+    IF RobOS() THEN
+        g_GripIn;
+    ELSE
+        ! Code for Virtual Controller
+        SetDO custom_DO_0_gClose,1;
+        SetDO custom_DO_1_gOpen,0;
+    ENDIF
     WaitTime 1.5;
 ENDPROC
    
 PROC Pince_Ouvre()
-     SetDO custom_DO_1_gOpen,1;
-     SetDO custom_DO_0_gClose,0;
-     !g_GripOut;
+    IF RobOS() THEN
+        g_GripOut;
+    ELSE
+        ! Code for Virtual Controller
+        SetDO custom_DO_1_gOpen,1;
+        SetDO custom_DO_0_gClose,0;
+    ENDIF
      WaitTime 1.5;
 ENDPROC
 
@@ -294,12 +314,7 @@ ENDPROC
 ! Procedure: select_num_blocks
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
-    
-    VAR num angleDeg;
-    VAR num radius_apothem;
-    VAR num angle_rad;
-    VAR num hypotenuse;
-
+    VAR robtarget rTemp;
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
@@ -312,29 +327,20 @@ PROC select_num_blocs()
     num_of_blocs := num_of_blocs + 2;
     TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
-    angle_rad := 3.14159265359 / num_of_blocs;
-    radius_apothem := EpaisMM / (2 * Tan(angle_rad));
+    ! Apothem: A line segment from the center of a regular polygon to the midpoint of a side.
+    apothem := EpaisMM / (2 * Tan(180 / num_of_blocs));
     
-    hypotenuse := Sqrt(2) * radius_apothem;
-
-    ! rDepotArray{1} := RelTool(rFeuilleCentre, 0, -(LongeurMM/2), 0 \Rz := 0);
+    trans_totale := (LongeurMM/2) + apothem;
   
     FOR i FROM 1 TO num_of_blocs DO
         angleDeg := (360.0 / num_of_blocs) * (i - 1);
         
-        rDepotArray{i} := RelTool(rFeuilleCentre, 0, ((LongeurMM/2)), 0 \Rz := angleDeg);
-        
-!        ! Step 1: Rotate base around Z by angleDeg
-!        rDepotArray{i} := RelTool(rDepot, 0, 0, 0 \Rz := angleDeg);
+        ! Step 1: rotate rFeuilleCentre about its own Z by angleDeg degrees
+        rTemp := RelTool(rFeuilleCentre, 0, 0, 0 \Rz := angleDeg);
     
-!        ! Step 2: Move forward in rotated tool frame
-!        rDepotArray{i} := RelTool(rDepotArray{i}, 0, radius_apothem, 0);
-        
-        ! Translate and rotate from base position, using built-in \Rz (Z-axis rotation)
-        ! rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0 \Rz := angleDeg);
+        ! Step 2: translate rTemp by 0 in X, –trans_totale in Y, 0 in Z (all in rTemp’s axes)
+        rDepotArray{i} := RelTool(rTemp, 0, -trans_totale, 0);
     ENDFOR
-
-  
 
 ENDPROC
 
