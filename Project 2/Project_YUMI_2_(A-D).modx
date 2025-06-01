@@ -331,10 +331,6 @@ PROC select_num_blocs()
     apothem := EpaisMM / (2 * Tan(180 / num_of_blocs));
     
     trans_totale := (LongeurMM/2) + apothem;
-    
-    ! hypotenuse := Sqrt(2) * radius_apothem;
-
-    ! rDepotArray{1} := RelTool(rFeuilleCentre, 0, -(LongeurMM/2), 0 \Rz := 0);
   
     FOR i FROM 1 TO num_of_blocs DO
         angleDeg := (360.0 / num_of_blocs) * (i - 1);
@@ -350,8 +346,6 @@ PROC select_num_blocs()
         ! Translate and rotate from base position, using built-in \Rz (Z-axis rotation)
         ! rDepotArray{i} := RelTool(rFeuilleCentre, 0, 0, 0 \Rz := angleDeg);
     ENDFOR
-
-  
 
 ENDPROC
 
