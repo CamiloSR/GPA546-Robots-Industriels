@@ -45,7 +45,7 @@ MODULE Demo
 !  PERS robtarget rDepot:=[[-375.57,-183.03,38.56],[0.0317796,-0.759987,-0.647212,0.0502556],[0,0,-1,4],[-13.1289,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rRetrait:=[[-298.20,-128.81,204.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-  
+
   ! Computed "positions" data
   VAR pos pos_rRetrait;
   VAR pos pos_Actuelle;
@@ -58,9 +58,8 @@ MODULE Demo
   VAR errnum errvar;
   VAR num i;
   VAR num angleDeg;
+  VAR num tan_val;
   VAR num apothem;
-  VAR num angle_rad;
-  VAR num hypotenuse;
   VAR num trans_totale;
 
 
@@ -328,7 +327,8 @@ PROC select_num_blocs()
     TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
     ! Apothem: A line segment from the center of a regular polygon to the midpoint of a side.
-    apothem := EpaisMM / (2 * Tan(180 / num_of_blocs));
+    tan_val := Tan(180 / num_of_blocs);
+    apothem := EpaisMM / (2 * tan_val);
     
     trans_totale := (LongeurMM/2) + apothem;
   
