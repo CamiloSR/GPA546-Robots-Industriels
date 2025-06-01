@@ -314,6 +314,7 @@ PROC select_num_blocs()
     VAR num radius_apothem;
     VAR num angle_rad;
     VAR num hypotenuse;
+    VAR num total_mov;
 
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
@@ -330,6 +331,8 @@ PROC select_num_blocs()
     angle_rad := 3.14159265359 / num_of_blocs;
     radius_apothem := EpaisMM / (2 * Tan(angle_rad));
     
+    total_mov := (LongeurMM/2) + radius_apothem;
+    
     hypotenuse := Sqrt(2) * radius_apothem;
 
     ! rDepotArray{1} := RelTool(rFeuilleCentre, 0, -(LongeurMM/2), 0 \Rz := 0);
@@ -337,16 +340,16 @@ PROC select_num_blocs()
     FOR i FROM 1 TO num_of_blocs DO
         angleDeg := (360.0 / num_of_blocs) * (i - 1);
         
-        rDepotArray{i} := RelTool(rFeuilleCentre, 0, ((LongeurMM/2)), 0 \Rz := angleDeg);
+        rDepotArray{i} := RelTool(rFeuilleCentre, 0, total_mov, 0 \Rz := angleDeg);
         
 !        ! Step 1: Rotate base around Z by angleDeg
-!        rDepotArray{i} := RelTool(rDepot, 0, 0, 0 \Rz := angleDeg);
+!        rDepotArray{i} := RelTool(rFeuilleCentre, 0, 0, 0 \Rz := angleDeg);
     
 !        ! Step 2: Move forward in rotated tool frame
 !        rDepotArray{i} := RelTool(rDepotArray{i}, 0, radius_apothem, 0);
         
         ! Translate and rotate from base position, using built-in \Rz (Z-axis rotation)
-        ! rDepotArray{i} := RelTool(rDepot, (-EpaisMM*(i-1)), 0, 0 \Rz := angleDeg);
+        ! rDepotArray{i} := RelTool(rFeuilleCentre, 0, 0, 0 \Rz := angleDeg);
     ENDFOR
 
   
