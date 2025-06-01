@@ -57,6 +57,11 @@ MODULE Demo
   VAR num num_of_blocs;
   VAR errnum errvar;
   VAR num i;
+  VAR num angleDeg;
+  VAR num apothem;
+  VAR num angle_rad;
+  VAR num hypotenuse;
+  VAR num trans_totale;
 
 
   ! Constant data
@@ -310,12 +315,6 @@ ENDPROC
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
     
-    VAR num angleDeg;
-    VAR num radius_apothem;
-    VAR num angle_rad;
-    VAR num hypotenuse;
-    VAR num total_mov;
-
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
@@ -328,19 +327,19 @@ PROC select_num_blocs()
     num_of_blocs := num_of_blocs + 2;
     TPWrite "Le nombre de blocs à palettiser est :" \Num:=num_of_blocs;
     
-    angle_rad := 3.14159265359 / num_of_blocs;
-    radius_apothem := EpaisMM / (2 * Tan(angle_rad));
+    ! Apothem: A line segment from the center of a regular polygon to the midpoint of a side.
+    apothem := EpaisMM / (2 * Tan(180 / num_of_blocs));
     
-    total_mov := (LongeurMM/2) + radius_apothem;
+    trans_totale := (LongeurMM/2) + apothem;
     
-    hypotenuse := Sqrt(2) * radius_apothem;
+    ! hypotenuse := Sqrt(2) * radius_apothem;
 
     ! rDepotArray{1} := RelTool(rFeuilleCentre, 0, -(LongeurMM/2), 0 \Rz := 0);
   
     FOR i FROM 1 TO num_of_blocs DO
         angleDeg := (360.0 / num_of_blocs) * (i - 1);
         
-        rDepotArray{i} := RelTool(rFeuilleCentre, 0, total_mov, 0 \Rz := angleDeg);
+        rDepotArray{i} := RelTool(rFeuilleCentre, 0, -trans_totale, 0 \Rz := angleDeg);
         
 !        ! Step 1: Rotate base around Z by angleDeg
 !        rDepotArray{i} := RelTool(rFeuilleCentre, 0, 0, 0 \Rz := angleDeg);
