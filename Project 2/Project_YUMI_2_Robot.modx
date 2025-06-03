@@ -10,7 +10,7 @@ MODULE Demo
 ! -------------------------------------------------------------------------------------
 ! Programme : GPA546Lab2
 ! Auteurs : Olivier Millette ET Camilo Serna
-! Date : Mai 28, 2025
+! Date : Juin 4, 2025
 ! Révision : V0.0
 !
 ! Description:
@@ -21,9 +21,9 @@ MODULE Demo
   ! Target "Crayon" position to adjust: XYZ position, quaternion orientation, robot configuration, external axis value
   PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Chute" position: same structure as above
-  PERS robtarget rGlissoire:=[[-198.82,298.17,63.79],[0.348848,0.00468034,-0.937135,-0.00777027],[0,0,-1,5],[-101.657,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rGlissoire:=[[-185.01,282.80,69.85],[0.268938,0.0292587,-0.962707,0.00352845],[0,-1,0,5],[-162.328,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Robot retract position in joint coordinates
-  PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS jointtarget jRetrait:=[[60,-85,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[299.94,223.8,222.93],[0.125356,0.900436,-0.414284,0.0432356],[1,-1,-1,5],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Target "Deposit" position for placing an object
   PERS robtarget rDepot:=[[299.57,136,29.72],[0.0955457,0.993452,-0.0625908,-0.00260891],[1,-1,-1,5],[-122.375,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -107,7 +107,9 @@ PROC main()
     ! Initialize robtargets in the array
     FOR i FROM 1 TO num_of_blocs DO
         ! Pick block from chute
+        ! DepotIntermediare;
         Prise;
+        DepotIntermediare;
         ! Deposit the block at rDepot {i}:
         Depot(rDepotArray{i});
         TPWrite heure + " - Bloc " + NumToStr(i, 0) + " déposé avec succès";
@@ -191,7 +193,7 @@ PROC Prise()
     ! Grasp the block
     ConfJ \Off;
     ConfL \Off;
-    MoveAbsJ jRetrait, HighSpeed, z50,tPince\WObj:=WobjTable;
+    ! MoveAbsJ jRetrait, HighSpeed, z50,tPince\WObj:=WobjTable;
 	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\WObj:=WobjTable;
 	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Push block
 	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Wait cylinder fully extended
@@ -215,14 +217,19 @@ PROC Depot(robtarget rPosDepot)
 
     ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
     ConfJ \Off;
-	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\WObj:=wobj0;
+	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\WObj:=WobjTable;
     ConfL \Off;
 	MoveL rPosDepot, LowSpeed, fine, tPince;
-	heure := CTime();
     ! Open the gripper
     Pince_Ouvre;
 	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\WObj:=WobjTable;
     
+ENDPROC
+
+PROC DepotIntermediare()
+    ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
+    ConfJ \Off;
+	MoveJ RelTool(rRetintermediaire,0,0,0), HighSpeed, z50, tPince\WObj:=WobjTable;
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -237,7 +244,7 @@ PROC Pince_Ferme()
 !        SetDO custom_DO_0_gClose,1;
 !        SetDO custom_DO_1_gOpen,0;
     ENDIF
-    WaitTime 1.5;
+    WaitTime 1;
 ENDPROC
    
 PROC Pince_Ouvre()
@@ -248,7 +255,7 @@ PROC Pince_Ouvre()
 !        SetDO custom_DO_1_gOpen,1;
 !        SetDO custom_DO_0_gClose,0;
     ENDIF
-     WaitTime 1.5;
+     WaitTime 1;
 ENDPROC
 ! -------------------------------------------------------------------------------------
 ! Procedure: ValidateRetract
