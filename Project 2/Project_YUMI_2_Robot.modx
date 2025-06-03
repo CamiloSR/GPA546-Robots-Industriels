@@ -23,7 +23,7 @@ MODULE Demo
   ! Target "Chute" position: same structure as above
   PERS robtarget rGlissoire:=[[-198.82,298.17,63.79],[0.348848,0.00468034,-0.937135,-0.00777027],[0,0,-1,5],[-101.657,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Robot retract position in joint coordinates
-  PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[299.94,223.8,222.93],[0.125356,0.900436,-0.414284,0.0432356],[1,-1,-1,5],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Target "Deposit" position for placing an object
   PERS robtarget rDepot:=[[299.57,136,29.72],[0.0955457,0.993452,-0.0625908,-0.00260891],[1,-1,-1,5],[-122.375,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -300,7 +300,6 @@ ENDPROC
 ! Procedure: select_num_blocks
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
-    VAR robtarget rTemp;
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
