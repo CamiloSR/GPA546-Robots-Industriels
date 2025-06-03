@@ -21,7 +21,7 @@ MODULE Demo
   ! Target "Crayon" position to adjust: XYZ position, quaternion orientation, robot configuration, external axis value
   PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Chute" position: same structure as above
-  PERS robtarget rGlissoire:=[[-185.01,282.80,69.85],[0.268938,0.0292587,-0.962707,0.00352845],[0,-1,0,5],[-162.328,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rGlissoire:=[[-189.66,283.10,63.48],[0.275783,0.0318164,-0.960288,-0.0279129],[0,-1,0,5],[-161.34,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Robot retract position in joint coordinates
   PERS jointtarget jRetrait:=[[60,-85,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[299.94,223.8,222.93],[0.125356,0.900436,-0.414284,0.0432356],[1,-1,-1,5],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -219,7 +219,7 @@ PROC Depot(robtarget rPosDepot)
     ConfJ \Off;
 	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\WObj:=WobjTable;
     ConfL \Off;
-	MoveL rPosDepot, LowSpeed, fine, tPince;
+	MoveL rPosDepot, LowSpeed, fine, tPince\WObj:=WobjTable;
     ! Open the gripper
     Pince_Ouvre;
 	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\WObj:=WobjTable;
