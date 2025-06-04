@@ -28,11 +28,7 @@ MODULE Demo
 
   ! Target "Deposit" position for placing an object
   VAR robtarget rDepot;
-!  PERS robtarget rDepot:=[[329.14,128.96,28.23],[0.0447304,0.984632,-0.168803,0.00192816],[1,-1,-1,5],[-130.238,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    
-!  PERS robtarget rDepot;
   PERS robtarget rRetintermediaire:=[[90.75,170.91,186.17],[0.0053318,0.00536722,0.998846,-0.0474359],[1,1,-2,4],[-175.089,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  
   
   PERS wobjdata WobjFeuille:=[FALSE, TRUE, "",[[-457.766, -33.8683, 30.6071],[0.00184288, -0.999728, 0.00493531, 0.0227361]],[[146.79,19.7958,-3.63954],[0.0216626,0.703359,0.710494,-0.00381495]]];
   PERS wobjdata WobjTable:=[FALSE, TRUE, "",[[-488.45, 121.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[0,0,0],[1,0,0,0]]];
@@ -81,7 +77,13 @@ MODULE Demo
   CONST dionum Retracte:=0;
   CONST dionum Extension:=1;
 
-
+  ! IO_ALIASES
+  VAR signaldo Cabinet_Block_Sensor;
+  VAR signaldo HoleSensor;
+  VAR signaldo Cilinder;
+  VAR signaldo Cilinder_Extended;
+  VAR signaldo Cilinder_Retracted;
+  
 ! -------------------------------------------------------------------------------------
 ! Procedure: main
 ! -------------------------------------------------------------------------------------
@@ -120,7 +122,7 @@ PROC main()
         ! Pick block from chute
         ! DepotIntermediare;
         Prise;
-        DepotIntermediare;
+        ! DepotIntermediare;
         ! Deposit the block at rDepot {i}:
         Depot(rDepotArray{i});
         TPWrite heure + " - Bloc " + NumToStr(i, 0) + " déposé avec succès";
