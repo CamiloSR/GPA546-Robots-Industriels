@@ -10,42 +10,33 @@ MODULE Demo
 ! -------------------------------------------------------------------------------------
 ! Programme : GPA546Lab2
 ! Auteurs : Olivier Millette ET Camilo Serna
-! Date : Juin 03, 2025
+! Date : Juin 4, 2025
 ! Révision : V0.0
 !
 ! Description:
-! This program picks up some blocks from a chute and stacks them on a work Following a pattern.
+! This program picks up two blocks from a chute and stacks them on a work table with the holes aligned.
 ! -------------------------------------------------------------------------------------
 
-
-  ! Tool data (gripper): active, TCP position, orientation, mass, center of gravity, inertia
-  PERS tooldata wi_tGripper;
-  PERS tooldata wi_tVacuum1st;
-  PERS tooldata t_Crayon;
-
-  ! "Positions" to fine-tune on the real robot
+ ! "Positions" to fine-tune on the real robot
   ! Target "Crayon" position to adjust: XYZ position, quaternion orientation, robot configuration, external axis value
   PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Chute" position: same structure as above
-  PERS robtarget rGlissoire:=[[-193.434,277.819,65.0723],[0.212106,-0.671728,0.677924,0.210267],[0,0,2,5],[-88.7724,9E+9,9E+9,9E+9,9E+9,9E+9]];
+  PERS robtarget rGlissoire:=[[-190.29,284.31,67.00],[0.00167709,0.953086,0.0364607,-0.300492],[0,0,2,5],[-160.011,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Robot retract position in joint coordinates
-  PERS jointtarget jRetrait:=[[90,-75,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[-327.80,-237.72,264.99],[0.0357309,-0.818372,-0.54703,0.172478],[1,-1,1,5],[-78.1561,9E+9,9E+9,9E+9,9E+9,9E+9]];
-  ! Target "Deposit" position for placing an object
-  PERS robtarget rDepot:=[[-285.818,-59.2446,23.85],[0,-0.707107,0.707107,0],[0,1,0,5],[-63.0892,9E+9,9E+9,9E+9,9E+9,9E+9]];
-  
-  ! Target "Deposit" position for placing an object
-  PERS robtarget rFeuilleCentre:=[[-317.57,-157.28,17.59],[0.00334788,0.642021,0.766673,-0.00318524],[1,-1,0,5],[-48.0238,9E+9,9E+9,9E+9,9E+9,9E+9]];
-  
-  PERS wobjdata WobjFeuille:=[FALSE, TRUE, "",[[-358.45, 21.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[146.79,19.7958,-3.63954],[0.0216626,0.703359,0.710494,-0.00381495]]];
-  PERS wobjdata WobjTable:=[FALSE, TRUE, "",[[-358.45, 21.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[0,0,0],[1,0,0,0]]];
-  
-! Position data taught on the REAL Robot A0610
-!  PERS robtarget rGlissoire:=[[-198.06,298.21,69.39],[0.191697,-0.682156,0.666204,0.232568],[0,-2,-1,4],[-45.0214,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rDepot:=[[-375.57,-183.03,38.56],[0.0317796,-0.759987,-0.647212,0.0502556],[0,0,-1,4],[-13.1289,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rRetrait:=[[-298.20,-128.81,204.66],[0.0253836,0.0359018,-0.99901,-0.00679038],[0,0,-2,4],[-3.31775,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS jointtarget jRetrait:=[[60,-85,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[299.94,223.8,222.93],[0.125356,0.900436,-0.414284,0.0432356],[1,-1,-1,5],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-
+  ! Target "Deposit" position for placing an object
+  VAR robtarget rDepot;
+  PERS robtarget rRetintermediaire:=[[90.75,170.91,186.17],[0.0053318,0.00536722,0.998846,-0.0474359],[1,1,-2,4],[-175.089,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  
+  PERS wobjdata WobjFeuille:=[FALSE, TRUE, "",[[-457.766, -33.8683, 30.6071],[0.00184288, -0.999728, 0.00493531, 0.0227361]],[[146.79,19.7958,-3.63954],[0.0216626,0.703359,0.710494,-0.00381495]]];
+  PERS wobjdata WobjTable:=[FALSE, TRUE, "",[[-488.45, 121.512, 17.5934],[0.702635, -0.000549124, 0.0108997, -0.711467]],[[0,0,0],[1,0,0,0]]];
+  
+  PERS robtarget p0 := [[146.69,29.25,13.40],[0.0214493,0.68754,-0.725824,0.00279732],[0,0,-2,4],[-106.777,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget pX := [[443.97,33.10,19.01],[0.0156179,0.711312,-0.702536,0.0153322],[0,0,-2,4],[-118.13,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget pY := [[151.05,244.34,7.77],[0.00452693,0.0342001,0.99937,-0.00830514],[0,2,-2,4],[-106.031,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  
   ! Computed "positions" data
   VAR pos pos_rRetrait;
   VAR pos pos_Actuelle;
@@ -61,7 +52,9 @@ MODULE Demo
   VAR num tan_val;
   VAR num apothem;
   VAR num trans_totale;
-
+  VAR robtarget rTemp;
+  VAR num dist_0X;
+    VAR num dist_0Y;
 
   ! Constant data
   CONST num Epaisseur:=1; ! Thickness of a block (in inches)
@@ -84,6 +77,13 @@ MODULE Demo
   CONST dionum Retracte:=0;
   CONST dionum Extension:=1;
 
+  ! IO_ALIASES
+  VAR signaldo Cabinet_Block_Sensor;
+  VAR signaldo HoleSensor;
+  VAR signaldo Cilinder;
+  VAR signaldo Cilinder_Extended;
+  VAR signaldo Cilinder_Retracted;
+  
 ! -------------------------------------------------------------------------------------
 ! Procedure: main
 ! -------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ PROC main()
     ValidateRetrait;
     
 	! Move to retract
-	MoveAbsJ jRetrait, HighSpeed, fine, tPince\wobj:=wobj0;
+	MoveAbsJ jRetrait, HighSpeed, fine, tPince\WObj:=WobjTable;
     
     ! 2) Calculations:
 	EpaisMM := Epaisseur * PouceToMM; ! Conversion to mm
@@ -120,14 +120,16 @@ PROC main()
     ! Initialize robtargets in the array
     FOR i FROM 1 TO num_of_blocs DO
         ! Pick block from chute
+        ! DepotIntermediare;
         Prise;
+        DepotIntermediare;
         ! Deposit the block at rDepot {i}:
         Depot(rDepotArray{i});
         TPWrite heure + " - Bloc " + NumToStr(i, 0) + " déposé avec succès";
     ENDFOR	
     
 	! 5) Return to retract
-	MoveAbsJ jRetrait,HighSpeed,z50,tPince\wobj:=wobj0;
+	MoveAbsJ jRetrait,HighSpeed,z50,tPince\WObj:=WobjTable;
 	
 	Pince_Ouvre;
     SetDO CabinetIO_0_DO16,1; ! simulate block pickup
@@ -152,7 +154,7 @@ PROC init()
     ! Open the gripper
     Pince_Ouvre;
     WaitTime 2;
-    
+    Stop;
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -175,7 +177,7 @@ PROC Prise()
         elapsed := ClkRead(timer);  
         IF elapsed > 5 THEN
             ! retract to safe position
-            MoveAbsJ jRetrait, HighSpeed, z50, tPince\wobj:=wobj0;
+            MoveAbsJ jRetrait, HighSpeed, z50, tPince\WObj:=WobjTable;
             TPWrite "Avertissement : >5 s sans bloc – retour à rRetrait";
             ClkReset timer;       ! restart timeout
             ClkStart timer;
@@ -202,20 +204,21 @@ PROC Prise()
     ENDIF
     
     ! Grasp the block
-    ConfJ \Off;
-    ConfL \Off;
-    MoveAbsJ jRetrait, HighSpeed, z50,tPince\wobj:=wobj0;
-	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\wobj:=wobj0;
+    configSET("on");
+    ! MoveAbsJ jRetrait, HighSpeed, z50,tPince\WObj:=WobjTable;
+	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\WObj:=WobjTable;
 	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Push block
 	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Wait cylinder fully extended
-	MoveL rGlissoireCalc, LowSpeed, fine, tPince\wobj:=wobj0;
+	MoveL rGlissoireCalc, LowSpeed, fine, tPince\WObj:=WobjTable;
+    configSET("off");
 	
 	SetDO CabinetIO_0_DO9_FV0101, Retracte;
     !WAITDI CabinetIO_0_DI14_ZS0104,0;
 	 WAITDI CabinetIO_0_DI13_ZS0103,1;
+    !g_GripIn; ! Close gripper
     Pince_Ferme;
     
-	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\wobj:=wobj0;
+	MoveL RelTool(rGlissoireCalc,0,0,-Decalage),LowSpeed,z50,tPince\WObj:=WobjTable;
     
 ENDPROC
 
@@ -226,15 +229,21 @@ ENDPROC
 PROC Depot(robtarget rPosDepot)
 
     ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
-    ConfJ \Off;
-	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\wobj:=wobj0;
-    ConfL \Off;
-	MoveL rPosDepot, LowSpeed, fine, tPince;
-	heure := CTime();
+    configSET("on");
+	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\WObj:=WobjTable;
+	MoveL rPosDepot, LowSpeed, fine, tPince\WObj:=WobjTable;
+    configSET("off");
     ! Open the gripper
     Pince_Ouvre;
-	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\wobj:=wobj0;
+	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\WObj:=WobjTable;
     
+ENDPROC
+
+PROC DepotIntermediare()
+    ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
+    configSET("on");
+	MoveJ RelTool(rRetintermediaire,0,0,0), HighSpeed, z50, tPince\WObj:=WobjTable;
+    configSET("off");
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -246,10 +255,20 @@ PROC Pince_Ferme()
         g_GripIn;
     ELSE
         ! Code for Virtual Controller
-        SetDO custom_DO_0_gClose,1;
-        SetDO custom_DO_1_gOpen,0;
+!        SetDO custom_DO_0_gClose,1;
+!        SetDO custom_DO_1_gOpen,0;
     ENDIF
-    WaitTime 1.5;
+    WaitTime 1;
+ENDPROC
+
+PROC configSET(string setting)
+    IF setting = "on" THEN
+        ConfJ \On;
+        ConfL \On;
+    ELSE
+        ConfJ \Off;
+        ConfL \Off;
+    ENDIF
 ENDPROC
    
 PROC Pince_Ouvre()
@@ -257,19 +276,18 @@ PROC Pince_Ouvre()
         g_GripOut;
     ELSE
         ! Code for Virtual Controller
-        SetDO custom_DO_1_gOpen,1;
-        SetDO custom_DO_0_gClose,0;
+!        SetDO custom_DO_1_gOpen,1;
+!        SetDO custom_DO_0_gClose,0;
     ENDIF
-     WaitTime 1.5;
+     WaitTime 1;
 ENDPROC
-
 ! -------------------------------------------------------------------------------------
 ! Procedure: ValidateRetract
 ! -------------------------------------------------------------------------------------
 PROC ValidateRetrait()
     ! Get positions
     pos_rRetrait := rRetrait.trans;
-    pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=wobj0);
+    pos_Actuelle := CPos(\Tool:=wi_tGripper, \WObj:=WobjTable);
     
     ! Calculate distance between positions
     dist := Distance(pos_rRetrait, pos_Actuelle);
@@ -301,19 +319,24 @@ PROC ValidateRetrait()
         IF answer = resCancel main;
         IF answer = resOK THEN 
             TPWrite "Arrêt du programme.";
-            Stop;
+            Exit;
         ENDIF
 
     ENDIF
 
 ENDPROC
 
-
 ! -------------------------------------------------------------------------------------
 ! Procedure: select_num_blocks
 ! -------------------------------------------------------------------------------------
 PROC select_num_blocs()
-    VAR robtarget rTemp;
+    
+    ! Calculate distance between positions
+    dist_0X := Distance(p0.trans, pX.trans);
+    dist_0Y := Distance(p0.trans, pY.trans);
+           
+    rDepot:= Offs(p0, dist_0X/2, dist_0Y/2, 10);
+    
     TPReadFK num_of_blocs, "Veuillez indiquer le nombre de blocs à palettiser : ",
         "3", "4", "5", "6", "7",
         \MaxTime:=60, \BreakFlag:=errvar;
@@ -329,20 +352,18 @@ PROC select_num_blocs()
     ! Apothem: A line segment from the center of a regular polygon to the midpoint of a side.
     tan_val := Tan(180 / num_of_blocs);
     apothem := EpaisMM / (2 * tan_val);
-    
-    trans_totale := (LongeurMM/2) + apothem;
+    trans_totale := (LongeurMM/2) + apothem + 1; !The + 2 here is just to assure that blocks do not collide
   
     FOR i FROM 1 TO num_of_blocs DO
-        angleDeg := (360.0 / num_of_blocs) * (i - 1);
+        angleDeg := ((360.0 / num_of_blocs) * (i - 1)) + 90;
         
         ! Step 1: rotate rFeuilleCentre about its own Z by angleDeg degrees
-        rTemp := RelTool(rFeuilleCentre, 0, 0, 0 \Rz := angleDeg);
+        rTemp := RelTool(rDepot, 0, 0, 0 \Rz := angleDeg);
     
         ! Step 2: translate rTemp by 0 in X, –trans_totale in Y, 0 in Z (all in rTemp’s axes)
         rDepotArray{i} := RelTool(rTemp, 0, -trans_totale, 0);
     ENDFOR
 
 ENDPROC
-
 
 ENDMODULE
