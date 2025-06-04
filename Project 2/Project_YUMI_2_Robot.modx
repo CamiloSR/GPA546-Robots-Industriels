@@ -135,7 +135,7 @@ PROC main()
     SetDO CabinetIO_0_DO16,1; ! simulate block pickup
     WaitTime 2; 
     SetDO CabinetIO_0_DO16,0; ! simulate block pickup
-    
+    Exit;
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ PROC init()
     ! Open the gripper
     Pince_Ouvre;
     WaitTime 2;
-    Exit;
+    
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
