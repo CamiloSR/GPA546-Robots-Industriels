@@ -296,6 +296,7 @@ PROC ValidateRetrait()
     IF dist <= 50 THEN
         ! Validation successful: briefly turn on the blue light without waiting
         msg := "Distance entre pince et rRetrait est: " + NumToStr(dist, 0) + "mm";
+        TPWrite msg;
         SetDO CabinetIO_0_DO4_JB01_LampBlu, 1;
         WaitTime \InPos,2;         ! Background wait
         SetDO CabinetIO_0_DO4_JB01_LampBlu, 0;
