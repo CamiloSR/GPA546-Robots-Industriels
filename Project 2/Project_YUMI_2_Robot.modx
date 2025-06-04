@@ -21,12 +21,13 @@ MODULE Demo
   ! Target "Crayon" position to adjust: XYZ position, quaternion orientation, robot configuration, external axis value
   PERS robtarget rCrayon:=[[-446.844,212.768,88],[0,0.92388,-0.382683,0],[0,0,0,5],[13.6937,9E+9,9E+9,9E+9,9E+9,9E+9]];
   ! Target "Chute" position: same structure as above
-  PERS robtarget rGlissoire:=[[-189.66,283.10,63.48],[0.275783,0.0318164,-0.960288,-0.0279129],[0,-1,0,5],[-161.34,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rGlissoire:=[[-190.29,284.31,67.00],[0.00167709,0.953086,0.0364607,-0.300492],[0,0,2,5],[-160.011,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Robot retract position in joint coordinates
   PERS jointtarget jRetrait:=[[60,-85,20,-90,-70,90],[90,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[299.94,223.8,222.93],[0.125356,0.900436,-0.414284,0.0432356],[1,-1,-1,5],[-148.549,9E+09,9E+09,9E+09,9E+09,9E+09]];
   ! Target "Deposit" position for placing an object
-  PERS robtarget rDepot:=[[299.57,136,29.72],[0.0955457,0.993452,-0.0625908,-0.00260891],[1,-1,-1,5],[-122.375,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[329.14,128.96,28.23],[0.0447304,0.984632,-0.168803,0.00192816],[1,-1,-1,5],[-130.238,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rDepot;
   PERS robtarget rRetintermediaire:=[[90.75,170.91,186.17],[0.0053318,0.00536722,0.998846,-0.0474359],[1,1,-2,4],[-175.089,9E+09,9E+09,9E+09,9E+09,9E+09]];
   
   
@@ -191,13 +192,13 @@ PROC Prise()
     ENDIF
     
     ! Grasp the block
-    ConfJ \Off;
-    ConfL \Off;
+    configSET("on");
     ! MoveAbsJ jRetrait, HighSpeed, z50,tPince\WObj:=WobjTable;
 	MoveJ RelTool(rGlissoireCalc,0,0,-Decalage),HighSpeed,z50,tPince\WObj:=WobjTable;
 	SetDO CabinetIO_0_DO9_FV0101, Extension; ! Push block
 	WAITDI CabinetIO_0_DI14_ZS0104,1; ! Wait cylinder fully extended
 	MoveL rGlissoireCalc, LowSpeed, fine, tPince\WObj:=WobjTable;
+    configSET("off");
 	
 	SetDO CabinetIO_0_DO9_FV0101, Retracte;
     !WAITDI CabinetIO_0_DI14_ZS0104,0;
@@ -216,10 +217,10 @@ ENDPROC
 PROC Depot(robtarget rPosDepot)
 
     ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
-    ConfJ \Off;
+    configSET("on");
 	MoveJ RelTool(rPosDepot,0,0,-Decalage), HighSpeed, z50, tPince\WObj:=WobjTable;
-    ConfL \Off;
 	MoveL rPosDepot, LowSpeed, fine, tPince\WObj:=WobjTable;
+    configSET("off");
     ! Open the gripper
     Pince_Ouvre;
 	MoveL RelTool(rPosDepot,0,0,-Decalage), LowSpeed, z50, tPince\WObj:=WobjTable;
@@ -228,8 +229,9 @@ ENDPROC
 
 PROC DepotIntermediare()
     ! Even if rPosDepot was taught, setting configs Off reduces unnecessary moves
-    ConfJ \Off;
+    configSET("on");
 	MoveJ RelTool(rRetintermediaire,0,0,0), HighSpeed, z50, tPince\WObj:=WobjTable;
+    configSET("off");
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -245,6 +247,16 @@ PROC Pince_Ferme()
 !        SetDO custom_DO_1_gOpen,0;
     ENDIF
     WaitTime 1;
+ENDPROC
+
+PROC configSET(string setting)
+    IF setting = "on" THEN
+        ConfJ \On;
+        ConfL \On;
+    ELSE
+        ConfJ \Off;
+        ConfL \Off;
+    ENDIF
 ENDPROC
    
 PROC Pince_Ouvre()
@@ -322,8 +334,9 @@ PROC select_num_blocs()
     ! Apothem: A line segment from the center of a regular polygon to the midpoint of a side.
     tan_val := Tan(180 / num_of_blocs);
     apothem := EpaisMM / (2 * tan_val);
-    
     trans_totale := (LongeurMM/2) + apothem;
+    
+!    rDepot := Offs(WobjFeuille.oframe, 0, 0, -10);
   
     FOR i FROM 1 TO num_of_blocs DO
         angleDeg := (360.0 / num_of_blocs) * (i - 1);
