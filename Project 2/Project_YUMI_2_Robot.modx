@@ -154,7 +154,7 @@ PROC init()
     ! Open the gripper
     Pince_Ouvre;
     WaitTime 2;
-    
+    Exit;
 ENDPROC
 
 ! -------------------------------------------------------------------------------------
@@ -291,7 +291,6 @@ PROC ValidateRetrait()
     
     ! Calculate distance between positions
     dist := Distance(pos_rRetrait, pos_Actuelle);
-    dist := 5;
     
     ! Check distance
     IF dist <= 50 THEN
@@ -344,7 +343,7 @@ PROC select_num_blocs()
 
     IF errvar = ERR_TP_MAXTIME THEN
         TPWrite "Temps écoulé sans réponse.";
-        Stop;
+        Exit;
     ENDIF
 
     num_of_blocs := num_of_blocs + 2;
