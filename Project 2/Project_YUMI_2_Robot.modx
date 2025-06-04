@@ -122,7 +122,7 @@ PROC main()
         ! Pick block from chute
         ! DepotIntermediare;
         Prise;
-        ! DepotIntermediare;
+        DepotIntermediare;
         ! Deposit the block at rDepot {i}:
         Depot(rDepotArray{i});
         TPWrite heure + " - Bloc " + NumToStr(i, 0) + " déposé avec succès";
