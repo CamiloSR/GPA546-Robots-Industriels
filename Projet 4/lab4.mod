@@ -8,17 +8,18 @@ MODULE Lab4
 ! Description :
 ! -------------------------------------------------------------------------------------
 
-!- Définition du TCP pour l'outil pince-bloc
+  !- Définition du TCP pour l'outil pince-bloc
   PERS tooldata tPince_bloc:= [ TRUE, [[97.4, 0, 223.1], [0.924, 0, 0.383 ,0]], [5, [23, 0, 75], [1, 0, 0, 0], 0, 0, 0]];
 
-! Positions pré-définies
+  ! Positions pré-définies
   PERS robtarget rGlissoire_prise:=[[-164.37,672.37,367.38],[0.0105179,0.991123,-0.0242506,0.130296],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rGlissoire_depot:=[[-340.06,816.86,532.71],[0.00655608,-0.993196,0.0156105,-0.115215],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepot:=[[287.55,1435.19,378.23],[0.0240292,-0.921577,-0.0369378,-0.385687],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[172.36,675.66,769.46],[0.00352911,0.918376,-0.0261961,0.394826],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  ! PERS robtarget rRetrait:=[[172.36,675.66,769.46],[0.00352911,0.918376,-0.0261961,0.394826],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[603.93,-99.63,880.90],[0.0227888,0.540298,-0.675751,0.500918],[-1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Position calculée
-  VAR robtarget rDepot2;
+  VAR robtarget rDepot_new;
 
   ! Constantes
   CONST num Epaisseur   := 1;     ! Épaisseur d'un bloc (en pouces)
@@ -70,24 +71,14 @@ PROC main()
     configIO;           ! Mappage I/O + contrôles
 	init;               ! Configurations initiales
     verPositionAxes;    ! Vérification de positionnement des axes
-
+    Deplacement_blocs;
+    
 	! Aller en position « home »
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
 
 	! 2) Calculs
 	EpaisMM := Epaisseur * PouceToMM;          ! Conversion en mm
-	rDepot2 := Offs(rDepot,0,0,-EpaisMM);      ! Position pour le 2? bloc
-
-	! 3) Déplacement du premier bloc
-	Prise_Glissoire;                           ! Prendre le bloc
-	Depot(rDepot);                             ! Dépôt du bloc 1
-
-	! 4) Déplacement du second bloc
-	Prise_Glissoire;                                     ! Prendre le bloc
-	Depot(rDepot2);                            ! Dépôt du bloc 2
-
-	! 5) Retour à la position de retrait
-	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
+	
 	
 	Pince\Ouvert;                              ! Ouvrir la pince
 ENDPROC
@@ -262,13 +253,23 @@ PROC Prise_Glissoire()
     ENDIF
 
     ! Saisir le bloc
-    MoveJ RelTool(rGlissoire_depot, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveJ RelTool(rGlissoire_prise, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
     SetDO verinExtension, Extension;       ! Indexer le bloc pendant le mouvement
     WaitDI verinEtendu, 1;                 ! Attendre l'extension du vérin
-    MoveL rGlissoire_depot, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveL rGlissoire_prise, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
     Pince\Fermer;                          ! Fermer la pince
     SetDO verinExtension, Retracte;        ! Rétracter le vérin
     WaitDI verinEtendu, 0;                 ! Attendre la rétraction complète
+    MoveL RelTool(rGlissoire_prise, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+
+ENDPROC
+
+PROC Depot_Glissoire()
+
+    ! Saisir le bloc
+    MoveJ RelTool(rGlissoire_depot, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL rGlissoire_depot, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    Pince\Ouvert;                          ! Ouvrir la pince
     MoveL RelTool(rGlissoire_depot, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
 
 ENDPROC
@@ -294,6 +295,22 @@ PROC Depot(robtarget rPosDepot)
 
 ENDPROC
 
+PROC Prise_en_Depot(robtarget rPrisDepot)
+
+	! 1) Approche rapide offset Z pour éviter les collisions
+	MoveJ RelTool(rPrisDepot,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+
+	! 2) Descente linéaire à vitesse réduite pour un positionnement précis
+	MoveL rPrisDepot, LowSpeed, fine, tPince_bloc;
+
+	! 3) Ouvrir la pince pour relâcher le bloc
+	Pince\Fermer;
+
+	! 4) Remontée linéaire vers la position d'approche (offset Z)
+	MoveL RelTool(rPrisDepot,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+
+ENDPROC
+
 !**************************************************************************************
 ! ----------------------------------------------------------------------------
 ! ----------------------------------------------------------------------------
@@ -313,6 +330,42 @@ PROC Pince(\switch Ouvert | switch Fermer)
             WaitTime 1;                   ! Attendre le mouvement physique
         ENDIF
     ENDIF
+ENDPROC
+
+!**************************************************************************************
+! ----------------------------------------------------------------------------
+! ----------------------------------------------------------------------------
+!**************************************************************************************
+
+PROC Deplacement_blocs()
+    VAR num bloc;
+    VAR num b := 2;
+    
+    FOR bloc FROM 0 TO (b - 1) DO
+        ! Calcul de la nouvelle position rDepot_new par rapport à rDepot et au bloc qui correspond
+        rDepot_new := Offs(rDepot,0,0,((-EpaisMM) * bloc));
+        TPWrite NumToStr(rDepot_new.trans.z, 2);
+        ! Prendre le bloc au Glissoire
+        Prise_Glissoire;
+    	! Dépôt du bloc dans rDepot_new
+    	Depot(rDepot_new);
+    ENDFOR
+    ! Retour à la position de retrait
+    MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
+    WaitTime 3;
+    
+    FOR bloc FROM (b - 1) TO 0 STEP -1 DO
+        ! Calcul de la nouvelle position rDepot_new par rapport à rDepot et au bloc qui correspond
+        rDepot_new := Offs(rDepot,0,0,((-EpaisMM) * bloc));
+        ! Pris le Bloc le plus a haut
+        Prise_en_Depot(rDepot_new);
+        ! Depot le bloc au haut du Glissoire
+        Depot_Glissoire;
+    ENDFOR
+    
+    ! Retour à la position de retrait
+    MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
+    WaitTime 3;
 ENDPROC
 
 !**************************************************************************************
