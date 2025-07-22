@@ -12,10 +12,10 @@ MODULE Lab4
   PERS tooldata tPince_bloc:= [ TRUE, [[97.4, 0, 223.1], [0.924, 0, 0.383 ,0]], [5, [23, 0, 75], [1, 0, 0, 0], 0, 0, 0]];
 
 ! Positions pré-définies
-  PERS robtarget rGlissoire_prise:=[[-133.98,664.69,606.56],[0.00871289,-0.963775,-0.00269915,0.266559],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rGlissoire_depot:=[[-327.61,803.76,752.16],[0.00242824,-0.963786,0.0148964,0.26625],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepot:=[[811.89,-441.73,584.30],[0.148667,-0.719482,0.659588,-0.158704],[-1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[0,0,0],[1,0,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rGlissoire_prise:=[[-164.37,672.37,367.38],[0.0105179,0.991123,-0.0242506,0.130296],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rGlissoire_depot:=[[-340.06,816.86,532.71],[0.00655608,-0.993196,0.0156105,-0.115215],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[287.55,1435.19,378.23],[0.0240292,-0.921577,-0.0369378,-0.385687],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[172.36,675.66,769.46],[0.00352911,0.918376,-0.0261961,0.394826],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Position calculée
   VAR robtarget rDepot2;
@@ -67,9 +67,9 @@ MODULE Lab4
 !**************************************************************************************
 PROC main()
 	! 1) Initialisation
-    configIO;   ! ? mappage I/O + contrôles
-	init;
-    verPositionAxes;
+    configIO;           ! Mappage I/O + contrôles
+	init;               ! Configurations initiales
+    verPositionAxes;    ! Vérification de positionnement des axes
 
 	! Aller en position « home »
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
@@ -79,11 +79,11 @@ PROC main()
 	rDepot2 := Offs(rDepot,0,0,-EpaisMM);      ! Position pour le 2? bloc
 
 	! 3) Déplacement du premier bloc
-	Prise;                                     ! Prendre le bloc
+	Prise_Glissoire;                           ! Prendre le bloc
 	Depot(rDepot);                             ! Dépôt du bloc 1
 
 	! 4) Déplacement du second bloc
-	Prise;                                     ! Prendre le bloc
+	Prise_Glissoire;                                     ! Prendre le bloc
 	Depot(rDepot2);                            ! Dépôt du bloc 2
 
 	! 5) Retour à la position de retrait
@@ -211,17 +211,17 @@ PROC verPositionAxes()
     ! Comparaison articulation par articulation (de J1 à J6)
     FOR i FROM 1 TO 6 DO
         IF i = 1 THEN
-            delta := Abs(posActuelle.robax.rax_1 - posReference.robax.rax_1);
+            delta := abs_val(posActuelle.robax.rax_1 - posReference.robax.rax_1);
         ELSEIF i = 2 THEN
-            delta := Abs(posActuelle.robax.rax_2 - posReference.robax.rax_2);
+            delta := abs_val(posActuelle.robax.rax_2 - posReference.robax.rax_2);
         ELSEIF i = 3 THEN
-            delta := Abs(posActuelle.robax.rax_3 - posReference.robax.rax_3);
+            delta := abs_val(posActuelle.robax.rax_3 - posReference.robax.rax_3);
         ELSEIF i = 4 THEN
-            delta := Abs(posActuelle.robax.rax_4 - posReference.robax.rax_4);
+            delta := abs_val(posActuelle.robax.rax_4 - posReference.robax.rax_4);
         ELSEIF i = 5 THEN
-            delta := Abs(posActuelle.robax.rax_5 - posReference.robax.rax_5);
+            delta := abs_val(posActuelle.robax.rax_5 - posReference.robax.rax_5);
         ELSEIF i = 6 THEN
-            delta := Abs(posActuelle.robax.rax_6 - posReference.robax.rax_6);
+            delta := abs_val(posActuelle.robax.rax_6 - posReference.robax.rax_6);
         ENDIF
 
         ! Si l'articulation fait partie de J1-J3 et dépasse 1 degré, erreur
@@ -250,7 +250,7 @@ ENDPROC
 !**************************************************************************************
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
-PROC Prise()
+PROC Prise_Glissoire()
 
     ! Vérifier la présence d'un bloc dans la glissoire
     IF DInput(blocPresentPoussoir) = 0 THEN
@@ -314,6 +314,18 @@ PROC Pince(\switch Ouvert | switch Fermer)
         ENDIF
     ENDIF
 ENDPROC
+
+!**************************************************************************************
+!**************************************************************************************
+!**************************************************************************************
+
+ FUNC num abs_val(num x)
+     IF x >= 0 THEN
+         RETURN x;
+     ELSE
+         RETURN -x;
+     ENDIF
+ ENDFUNC
 
 !**************************************************************************************
 !**************************************************************************************
