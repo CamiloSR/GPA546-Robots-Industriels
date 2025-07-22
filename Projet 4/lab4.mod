@@ -15,8 +15,9 @@ MODULE Lab4
   PERS robtarget rGlissoire_prise:=[[-164.37,672.37,367.38],[0.0105179,0.991123,-0.0242506,0.130296],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rGlissoire_depot:=[[-340.06,816.86,532.71],[0.00655608,-0.993196,0.0156105,-0.115215],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  ! PERS robtarget rRetrait:=[[172.36,675.66,769.46],[0.00352911,0.918376,-0.0261961,0.394826],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[603.93,-99.63,880.90],[0.0227888,0.540298,-0.675751,0.500918],[-1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[172.36,675.66,769.46],[0.00352911,0.918376,-0.0261961,0.394826],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rCrayon:=[[31.46,1004.12,484.57],[0.00544611,-0.921407,0.0301981,-0.387385],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  ! PERS robtarget rRetrait:=[[603.93,-99.63,880.90],[0.0227888,0.540298,-0.675751,0.500918],[-1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Position calculée
   VAR robtarget rDepot_new;
@@ -27,7 +28,7 @@ MODULE Lab4
   CONST num Decalage    := -200;  ! Distance d'approche/retrait (mm) (+X pour marge de sécurité)
 
   ! Variables
-  VAR num EpaisMM:=0;
+  VAR num EpaisMM := Epaisseur * PouceToMM;
 
   ! Vitesses d'approche/retrait (mm/s)
   CONST speeddata LowSpeed:=[250,500,5000,1000];
@@ -67,11 +68,15 @@ MODULE Lab4
 
 !**************************************************************************************
 PROC main()
-	! 1) Initialisation
+	! Initialisation
     configIO;           ! Mappage I/O + contrôles
 	init;               ! Configurations initiales
     verPositionAxes;    ! Vérification de positionnement des axes
-    Deplacement_blocs;
+    
+    ! Movement des blocs
+    WHILE TRUE DO
+        Deplacement_blocs;
+    ENDWHILE
     
 	! Aller en position « home »
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
@@ -192,6 +197,8 @@ PROC verPositionAxes()
     VAR bool erreurDetectee := FALSE;     ! Indicateur s'il y a une erreur sur au moins une articulation
     VAR string msgErreur := "Écart articulaire : ";  ! Message à afficher en cas d'erreur
     VAR num i;
+    VAR string tmp;
+    VAR num seuil;
 
     ! Obtenir la position actuelle des articulations du robot
     posActuelle := CJointT();
@@ -215,15 +222,18 @@ PROC verPositionAxes()
             delta := abs_val(posActuelle.robax.rax_6 - posReference.robax.rax_6);
         ENDIF
 
-        ! Si l'articulation fait partie de J1-J3 et dépasse 1 degré, erreur
-        IF (i <= 3 AND delta > 1) THEN
-            msgErreur := msgErreur + "J" + ValToStr(i) + " (" + ValToStr(delta) + "°) ";
-            erreurDetectee := TRUE;
+        ! calcul du seuil selon l’articulation
+        IF i <= 3 THEN
+            seuil := 1;
+        ELSE
+            seuil := 5;
         ENDIF
-
-        ! Si l'articulation fait partie de J4-J6 et dépasse 5 degrés, erreur
-        IF (i > 3 AND delta > 5) THEN
-            msgErreur := msgErreur + "J" + ValToStr(i) + " (" + ValToStr(delta) + "°) ";
+        
+        ! si dépassement du seuil, on construit le message et on signale l’erreur
+        IF delta > seuil THEN
+            tmp := "J" + ValToStr(i) + " (" + ValToStr(delta);
+            tmp := tmp + "°) ";
+            msgErreur := msgErreur + tmp;
             erreurDetectee := TRUE;
         ENDIF
     ENDFOR
@@ -336,15 +346,37 @@ ENDPROC
 ! ----------------------------------------------------------------------------
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
+PROC Crayon(\switch Prise | switch Depot)
+    ! Action sur le Crayon
+    ! Approche rapide offset Z pour éviter les collisions
+    MoveJ RelTool(rCrayon,0,0,Decalage*2), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+    ! Descente linéaire à vitesse réduite pour un positionnement précis
+	MoveL rCrayon, LowSpeed, fine, tPince_bloc;
+	! Ouvir ou Fermer la Pince selon besoin
+    IF Present(Prise) THEN
+	    Pince\Fermer;
+    ELSE
+        Pince\Ouvert;
+    ENDIF
+	! Remontée linéaire vers la position d'approche (offset Z)
+	MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+ENDPROC
 
+!**************************************************************************************
+! ----------------------------------------------------------------------------
+! ----------------------------------------------------------------------------
+!**************************************************************************************
 PROC Deplacement_blocs()
     VAR num bloc;
     VAR num b := 2;
+    VAR num distance_rDepot;
+    VAR num distance_rPrise;
     
     FOR bloc FROM 0 TO (b - 1) DO
+        distance_rDepot := -((EpaisMM) * bloc);
+        TPWrite "Distance rDepot " + NumToStr(bloc,0) + NumToStr(distance_rDepot, 1);
         ! Calcul de la nouvelle position rDepot_new par rapport à rDepot et au bloc qui correspond
-        rDepot_new := Offs(rDepot,0,0,((-EpaisMM) * bloc));
-        TPWrite NumToStr(rDepot_new.trans.z, 2);
+        rDepot_new := RelTool(rDepot, 0, 0, distance_rDepot \Rz := 0);
         ! Prendre le bloc au Glissoire
         Prise_Glissoire;
     	! Dépôt du bloc dans rDepot_new
@@ -355,8 +387,10 @@ PROC Deplacement_blocs()
     WaitTime 3;
     
     FOR bloc FROM (b - 1) TO 0 STEP -1 DO
+        distance_rPrise := -((EpaisMM) * bloc);
+        TPWrite "Distance rPrise " + NumToStr(bloc,0) + NumToStr(distance_rPrise, 1);
         ! Calcul de la nouvelle position rDepot_new par rapport à rDepot et au bloc qui correspond
-        rDepot_new := Offs(rDepot,0,0,((-EpaisMM) * bloc));
+        rDepot_new := RelTool(rDepot, 0, 0, distance_rPrise \Rz := 0);
         ! Pris le Bloc le plus a haut
         Prise_en_Depot(rDepot_new);
         ! Depot le bloc au haut du Glissoire
@@ -367,7 +401,13 @@ PROC Deplacement_blocs()
     MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
     WaitTime 3;
 ENDPROC
-
+!**************************************************************************************
+! ----------------------------------------------------------------------------
+! ----------------------------------------------------------------------------
+!**************************************************************************************
+PROC FaireSoudure()
+    
+ENDPROC
 !**************************************************************************************
 !**************************************************************************************
 !**************************************************************************************
