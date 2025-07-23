@@ -8,16 +8,12 @@ MODULE Lab_4
 ! Description :
 ! -------------------------------------------------------------------------------------
 
-  !- Définition du TCP pour l'outil pince-bloc
-  PERS tooldata tPince_bloc:= [ TRUE, [[97.4, 0, 223.1], [0.924, 0, 0.383 ,0]], [5, [23, 0, 75], [1, 0, 0, 0], 0, 0, 0]];
-
   ! Positions pré-définies
-  PERS robtarget rGlissoire_prise:=[[-164.37,672.37,367.38],[0.0105179,0.991123,-0.0242506,0.130296],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rGlissoire_depot:=[[-340.06,816.86,532.71],[0.00655608,-0.993196,0.0156105,-0.115215],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rPriseGli:=[[-109.87,664.92,594.83],[0.00984941,-0.946124,0.0389095,0.321307],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepotGli:=[[-340.06,816.86,532.71],[0.00655608,-0.993196,0.0156105,-0.115215],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[172.36,675.66,769.46],[0.00352911,0.918376,-0.0261961,0.394826],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[69.84,683.61,944.05],[0.0289142,-0.997909,-0.0560458,-0.0141534],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rCrayon:=[[31.46,1004.12,484.57],[0.00544611,-0.921407,0.0301981,-0.387385],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  ! PERS robtarget rRetrait:=[[603.93,-99.63,880.90],[0.0227888,0.540298,-0.675751,0.500918],[-1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Position calculée
   VAR robtarget rDepot_new;
@@ -73,6 +69,9 @@ PROC main()
 	init;               ! Configurations initiales
     verPositionAxes;    ! Vérification de positionnement des axes
     
+    ! Calculs
+	EpaisMM := Epaisseur * PouceToMM;          ! Conversion en mm
+    
     ! Movement des blocs
     WHILE TRUE DO
         Deplacement_blocs;
@@ -81,10 +80,6 @@ PROC main()
 	! Aller en position « home »
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
 
-	! 2) Calculs
-	EpaisMM := Epaisseur * PouceToMM;          ! Conversion en mm
-	
-	
 	Pince\Ouvert;                              ! Ouvrir la pince
 ENDPROC
 !**************************************************************************************
@@ -222,14 +217,14 @@ PROC verPositionAxes()
             delta := abs_val(posActuelle.robax.rax_6 - posReference.robax.rax_6);
         ENDIF
 
-        ! calcul du seuil selon l’articulation
+        ! calcul du seuil selon l'articulation
         IF i <= 3 THEN
             seuil := 1;
         ELSE
             seuil := 5;
         ENDIF
         
-        ! si dépassement du seuil, on construit le message et on signale l’erreur
+        ! si dépassement du seuil, on construit le message et on signale l'erreur
         IF delta > seuil THEN
             tmp := "J" + ValToStr(i) + " (" + ValToStr(delta);
             tmp := tmp + "°) ";
@@ -263,24 +258,24 @@ PROC Prise_Glissoire()
     ENDIF
 
     ! Saisir le bloc
-    MoveJ RelTool(rGlissoire_prise, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveJ RelTool(rPriseGli, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
     SetDO verinExtension, Extension;       ! Indexer le bloc pendant le mouvement
     WaitDI verinEtendu, 1;                 ! Attendre l'extension du vérin
-    MoveL rGlissoire_prise, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveL rPriseGli, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
     Pince\Fermer;                          ! Fermer la pince
     SetDO verinExtension, Retracte;        ! Rétracter le vérin
     WaitDI verinEtendu, 0;                 ! Attendre la rétraction complète
-    MoveL RelTool(rGlissoire_prise, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL RelTool(rPriseGli, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
 
 ENDPROC
 
 PROC Depot_Glissoire()
 
     ! Saisir le bloc
-    MoveJ RelTool(rGlissoire_depot, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
-    MoveL rGlissoire_depot, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveJ RelTool(rDepotGli, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL rDepotGli, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
     Pince\Ouvert;                          ! Ouvrir la pince
-    MoveL RelTool(rGlissoire_depot, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL RelTool(rDepotGli, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
 
 ENDPROC
 
