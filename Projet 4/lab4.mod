@@ -9,11 +9,11 @@ MODULE Lab_4
 ! -------------------------------------------------------------------------------------
 
   ! Positions pré-définies
-  PERS robtarget rPriseGli:=[[-113.48,666.46,587.98],[0.0123924,-0.945349,0.0261751,0.324771],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepotGli:=[[-303.51,796.79,734.75],[0.0123923,-0.945349,0.0261751,0.324771],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepot:=[[197.08,775.15,621.12],[0.0222835,-0.735197,0.677488,0.000275039],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[197.08,775.15,932.57],[0.0222836,-0.735196,0.677488,0.000275081],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rCrayon:=[[-67.90,1005.72,711.56],[0.0074007,-0.917198,-0.398348,-0.00349217],[1,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rPriseGli:=[[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepotGli:=[[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rCrayon:=[[-458.01,-708.60,486.63],[0.0070645,-0.643658,0.765251,0.00675729],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
 
   ! Orientation Crayon insiede this one:
@@ -71,22 +71,25 @@ MODULE Lab_4
 !*************************************************************************************
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
-VAR intnum soudureInterrupt := 3;   ! Any unused interrupt number
+VAR intnum soudureInterrupt;   ! Any unused interrupt number
 VAR bool soudureDemandee := FALSE;
 
 TRAP DemandeSoudure
     soudureDemandee := TRUE;
+    ISleep soudureInterrupt;
     TPWrite "?? Soudure demandée! Sera exécutée après ce bloc.";
+    FaireSoudure;
 ENDTRAP
 
  
  PROC FaireSoudure()
     SetDO lampeOrange, 1;
-    ! Exemple : 2 points de soudure simulés
     MoveL RelTool(rCrayon,0,0,Decalage*2), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
-    WaitTime 6;
+    WaitTime 5;
     SetDO lampeOrange, 0;
     MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    soudureDemandee := FALSE;
+    IWatch soudureInterrupt;
 ENDPROC
 
 !*************************************************************************************
@@ -108,6 +111,9 @@ PROC main()
     ! Movement des blocs
     WHILE TRUE DO
         Deplacement_blocs;
+!        IF soudureDemandee = TRUE THEN
+!            FaireSoudure;
+!        ENDIF
     ENDWHILE
     
 	! Aller en position « home »
@@ -191,12 +197,12 @@ PROC init()
 	!CONST jointtarget high_pos:=[[ 128, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
 	
 	! *** Robot 2
-	!CONST jointtarget low_pos:=[[ -134, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	!CONST jointtarget high_pos:=[[ -65, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	CONST jointtarget low_pos:=[[ -134, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	CONST jointtarget high_pos:=[[ -65, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
 	
 	! *** Robot 3
-	CONST jointtarget low_pos:=[[ 44, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	CONST jointtarget high_pos:=[[ 118, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	!CONST jointtarget low_pos:=[[ 44, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	!CONST jointtarget high_pos:=[[ 118, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
 	
 	! *** Robot 4
 	!CONST jointtarget low_pos:=[[ -104, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
