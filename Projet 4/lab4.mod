@@ -1,4 +1,4 @@
-MODULE Lab4
+MODULE Lab_4
 ! -------------------------------------------------------------------------------------
 ! Programme : GPA546Lab4
 ! Auteurs   : Olivier Millette ET Camilo Serna
