@@ -84,11 +84,13 @@ ENDTRAP
  
  PROC FaireSoudure()
     SetDO lampeOrange, 1;
-    MoveL RelTool(rCrayon,0,0,Decalage*2), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
     MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    WaitTime 4;
     Pince\Fermer; 
-    WaitTime 0.5;
+    WaitTime 1;
     Pince\Ouvert;
+    WaitTime 1;
     soudureDemandee := FALSE;
     SetDO lampeOrange, 0;
     IWatch soudureInterrupt;
