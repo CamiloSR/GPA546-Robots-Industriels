@@ -11,7 +11,7 @@ MODULE Lab_4
   ! Positions pré-définies
   PERS robtarget rPriseGli:=[[-113.48,666.46,587.98],[0.0123924,-0.945349,0.0261751,0.324771],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepotGli:=[[-303.51,796.79,734.75],[0.0123923,-0.945349,0.0261751,0.324771],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepot:=[[197.08,775.15,596.46],[0.0222835,-0.735197,0.677488,0.000275037],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[197.08,775.15,621.12],[0.0222835,-0.735197,0.677488,0.000275039],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[197.08,775.15,932.57],[0.0222836,-0.735196,0.677488,0.000275081],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rCrayon:=[[-67.90,1005.72,711.56],[0.0074007,-0.917198,-0.398348,-0.00349217],[1,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
@@ -44,9 +44,9 @@ MODULE Lab_4
 
   ! Zone de travail restreinte du robot
   VAR wztemporary EspaceRestreint;
-
-! ----------------------------------------------------------------------------
-! ----------------------------------------------------------------------------
+  
+ ! ----------------------------------------------------------------------------
+ ! ----------------------------------------------------------------------------
 
  ! Sorties numériques (DO) ALIASES
  VAR signaldo pinceFermer;          ! DO01_EE_PINCE01  - Commande de fermeture/ouverture de la pince
@@ -65,13 +65,41 @@ MODULE Lab_4
  VAR signaldi blocHautNiveau;       ! DI12_LSH0101     - Haut niveau de blocs dans la glissoire
  VAR signaldi verinRetracte;        ! DI13_ZS0103      - Fin de course : vérin rétracté
  VAR signaldi verinEtendu;          ! DI14_ZS0104      - Fin de course : vérin étendu
+ VAR signaldi boutonSoudureDI;      ! DI_Virtuel1_Bouton1 - bouton programmable 1
+ 
 
+!*************************************************************************************
+! ----------------------------------------------------------------------------
+!**************************************************************************************
+VAR intnum soudureInterrupt := 3;   ! Any unused interrupt number
+VAR bool soudureDemandee := FALSE;
 
+TRAP DemandeSoudure
+    soudureDemandee := TRUE;
+    TPWrite "?? Soudure demandée! Sera exécutée après ce bloc.";
+ENDTRAP
+
+ 
+ PROC FaireSoudure()
+    SetDO lampeOrange, 1;
+    ! Exemple : 2 points de soudure simulés
+    MoveL RelTool(rCrayon,0,0,Decalage*2), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    WaitTime 6;
+    SetDO lampeOrange, 0;
+    MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+ENDPROC
+
+!*************************************************************************************
+! ------------------------------------------------------------------------------
 !**************************************************************************************
 PROC main()
+    
 	! Initialisation
     configIO;           ! Mappage I/O + contrôles
 	init;               ! Configurations initiales
+    CONNECT soudureInterrupt WITH DemandeSoudure;
+    ISignalDI boutonSoudureDI, low, soudureInterrupt;
+
     verPositionAxes;    ! Vérification de positionnement des axes
     
     ! Calculs
@@ -138,6 +166,9 @@ PROC configIO()
 
     sigName := "DI14_ZS0104";
     AliasIO sigName, verinEtendu;
+    
+    sigName := "DI_Virtuel1_Bouton1";  
+    AliasIO sigName, boutonSoudureDI;
 
     RETURN;                       ! Tout s'est bien passé ? on sort
 ERROR
@@ -149,7 +180,6 @@ ENDPROC
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
 PROC init()
-
 	! Volume limitant les articulations du robot
 	VAR shapedata joint_space;
 	
@@ -401,13 +431,7 @@ PROC Deplacement_blocs()
     MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
     WaitTime 3;
 ENDPROC
-!**************************************************************************************
-! ----------------------------------------------------------------------------
-! ----------------------------------------------------------------------------
-!**************************************************************************************
-PROC FaireSoudure()
-    
-ENDPROC
+
 !**************************************************************************************
 !**************************************************************************************
 !**************************************************************************************
