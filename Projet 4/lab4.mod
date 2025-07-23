@@ -13,7 +13,7 @@ MODULE Lab_4
   PERS robtarget rDepotGli:=[[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rCrayon:=[[-458.01,-708.60,486.63],[0.0070645,-0.643658,0.765251,0.00675729],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rCrayon:=[[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
 
   ! Orientation Crayon insiede this one:
@@ -85,10 +85,12 @@ ENDTRAP
  PROC FaireSoudure()
     SetDO lampeOrange, 1;
     MoveL RelTool(rCrayon,0,0,Decalage*2), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
-    WaitTime 5;
-    SetDO lampeOrange, 0;
     MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    Pince\Fermer; 
+    WaitTime 0.5;
+    Pince\Ouvert;
     soudureDemandee := FALSE;
+    SetDO lampeOrange, 0;
     IWatch soudureInterrupt;
 ENDPROC
 
