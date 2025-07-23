@@ -111,9 +111,6 @@ PROC main()
     ! Movement des blocs
     WHILE TRUE DO
         Deplacement_blocs;
-!        IF soudureDemandee = TRUE THEN
-!            FaireSoudure;
-!        ENDIF
     ENDWHILE
     
 	! Aller en position « home »
@@ -417,10 +414,17 @@ PROC Deplacement_blocs()
         Prise_Glissoire;
     	! Dépôt du bloc dans rDepot_new
     	Depot(rDepot_new);
+        IF soudureDemandee = TRUE THEN
+            FaireSoudure;
+        ENDIF
     ENDFOR
+    
     ! Retour à la position de retrait
     MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
     WaitTime 3;
+    IF soudureDemandee = TRUE THEN
+        FaireSoudure;
+    ENDIF
     
     FOR bloc FROM (b - 1) TO 0 STEP -1 DO
         distance_rPrise := -((EpaisMM) * bloc);
@@ -431,11 +435,17 @@ PROC Deplacement_blocs()
         Prise_en_Depot(rDepot_new);
         ! Depot le bloc au haut du Glissoire
         Depot_Glissoire;
+        IF soudureDemandee = TRUE THEN
+            FaireSoudure;
+        ENDIF
     ENDFOR
     
     ! Retour à la position de retrait
     MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
     WaitTime 3;
+    IF soudureDemandee = TRUE THEN
+        FaireSoudure;
+    ENDIF
 ENDPROC
 
 !**************************************************************************************
