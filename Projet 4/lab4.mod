@@ -78,7 +78,7 @@ TRAP DemandeSoudure
     soudureDemandee := TRUE;
     ISleep soudureInterrupt;
     TPWrite "?? Soudure demandée! Sera exécutée après ce bloc.";
-    FaireSoudure;
+!    FaireSoudure;
 ENDTRAP
 
  
@@ -446,6 +446,7 @@ PROC Deplacement_blocs()
     IF soudureDemandee = TRUE THEN
         FaireSoudure;
     ENDIF
+    
 ENDPROC
 
 !**************************************************************************************
