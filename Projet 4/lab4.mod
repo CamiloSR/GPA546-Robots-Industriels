@@ -8,7 +8,7 @@ MODULE Lab_4
 ! Description :
 ! -------------------------------------------------------------------------------------
 
-  ! Positions pré-définies
+  ! Positions pré-définies VRAI ROBOT
 !  PERS robtarget rPriseGli:=[[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rDepotGli:=[[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -20,11 +20,10 @@ MODULE Lab_4
   PERS robtarget rDepot:=[[201.58,790.42,377.17],[0.00756759,-0.709954,-0.704175,-0.00677517],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[201.58,790.42,713.35],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rCrayon:=[[-66.69,1008.93,496.08],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-
+  PERS robtarget rSoudure:=[[-66.69,1008.93,496.08],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Orientation Crayon insiede this one:
   ! PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-
 
   ! Position calculée
   VAR robtarget rDepot_new;
@@ -73,7 +72,6 @@ MODULE Lab_4
  VAR signaldi verinEtendu;          ! DI14_ZS0104      - Fin de course : vérin étendu
  VAR signaldi boutonSoudureDI;      ! DI_Virtuel1_Bouton1 - bouton programmable 1
  
-
 !*************************************************************************************
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
@@ -83,17 +81,16 @@ VAR bool soudureDemandee := FALSE;
 TRAP DemandeSoudure
     soudureDemandee := TRUE;
     ISleep soudureInterrupt;
-    TPWrite "?? Soudure demandée! Sera exécutée après ce bloc.";
-!    FaireSoudure;
+    TPWrite "Soudure demandée! Sera exécutée après ce bloc.";
 ENDTRAP
 
- 
- PROC FaireSoudure()
+PROC SimulerSoudure()
     SetDO lampeOrange, 1;
-    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveJ RelTool(rCrayon,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
     MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
-    WaitTime 4;
-    Pince\Fermer; 
+    WaitTime 0.5;
+    Pince\Fermer;
+    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
     WaitTime 1;
     Pince\Ouvert;
     WaitTime 1;
@@ -194,26 +191,32 @@ ENDPROC
 !**************************************************************************************
 PROC init()
 	! Volume limitant les articulations du robot
-	VAR shapedata joint_space;
+	VAR shapedata joint_space;  
+    VAR jointtarget low_pos;
+    VAR jointtarget high_pos;
 	
 	! Conserver seulement le jeu adapté à votre robot
 	! Ces limites logicielles garantissent la sécurité
 	
 	! *** Robot 1
-	!CONST jointtarget low_pos:=[[ 54, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	!CONST jointtarget high_pos:=[[ 128, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	
-	! *** Robot 2
-	CONST jointtarget low_pos:=[[ -134, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	CONST jointtarget high_pos:=[[ -65, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	
-	! *** Robot 3
-	!CONST jointtarget low_pos:=[[ 44, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	!CONST jointtarget high_pos:=[[ 118, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	! low_pos:=[[ 54, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	! high_pos:=[[ 128, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+    
+    IF RobOS() THEN
+        ! *** Robot 2
+    	low_pos:=[[ -134, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+    	high_pos:=[[ -65, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+    ELSE
+        ! Code for Virtual Controller
+        TPWrite "Utilisation de la cellule virtuelle dans Robostudio";
+        ! *** Robot 3
+    	low_pos:=[[ 44, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+    	high_pos:=[[ 118, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+    ENDIF
 	
 	! *** Robot 4
-	!CONST jointtarget low_pos:=[[ -104, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
-	!CONST jointtarget high_pos:=[[ -28, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	! low_pos:=[[ -104, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
+	! high_pos:=[[ -28, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
 
 	! Activation de la limitation (obligatoire)
 	WZFree EspaceRestreint;
@@ -417,7 +420,6 @@ PROC Deplacement_blocs()
     
     FOR bloc FROM 0 TO (b - 1) DO
         distance_rDepot := -((EpaisMM) * bloc);
-        TPWrite "Distance rDepot " + NumToStr(bloc,0) + NumToStr(distance_rDepot, 1);
         ! Calcul de la nouvelle position rDepot_new par rapport à rDepot et au bloc qui correspond
         rDepot_new := RelTool(rDepot, 0, 0, distance_rDepot \Rz := 0);
         ! Prendre le bloc au Glissoire
@@ -425,7 +427,7 @@ PROC Deplacement_blocs()
     	! Dépôt du bloc dans rDepot_new
     	Depot(rDepot_new);
         IF soudureDemandee = TRUE THEN
-            FaireSoudure;
+            SimulerSoudure;
         ENDIF
     ENDFOR
     
@@ -433,12 +435,11 @@ PROC Deplacement_blocs()
     MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
     WaitTime 3;
     IF soudureDemandee = TRUE THEN
-        FaireSoudure;
+        SimulerSoudure;
     ENDIF
     
     FOR bloc FROM (b - 1) TO 0 STEP -1 DO
         distance_rPrise := -((EpaisMM) * bloc);
-        TPWrite "Distance rPrise " + NumToStr(bloc,0) + NumToStr(distance_rPrise, 1);
         ! Calcul de la nouvelle position rDepot_new par rapport à rDepot et au bloc qui correspond
         rDepot_new := RelTool(rDepot, 0, 0, distance_rPrise \Rz := 0);
         ! Pris le Bloc le plus a haut
@@ -446,7 +447,7 @@ PROC Deplacement_blocs()
         ! Depot le bloc au haut du Glissoire
         Depot_Glissoire;
         IF soudureDemandee = TRUE THEN
-            FaireSoudure;
+            SimulerSoudure;
         ENDIF
     ENDFOR
     
@@ -454,7 +455,7 @@ PROC Deplacement_blocs()
     MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
     WaitTime 3;
     IF soudureDemandee = TRUE THEN
-        FaireSoudure;
+        SimulerSoudure;
     ENDIF
     
 ENDPROC
