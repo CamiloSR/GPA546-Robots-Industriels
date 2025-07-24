@@ -144,7 +144,8 @@ ENDPROC
 
 PROC LeCrayon(\switch Prise | switch Deposer)
     MoveJ RelTool(rCrayon,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
-    MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL rCrayon, LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    WaitTime 0.5;
     IF Present(Prise) THEN
         Pince\Fermer;
     ELSE
@@ -191,10 +192,14 @@ PROC main()
     ! Calculs
 	EpaisMM := Epaisseur * PouceToMM;          ! Conversion en mm
     
-    ! Movement des blocs
     WHILE TRUE DO
-        Deplacement_blocs;
+        SimulerSoudure;
     ENDWHILE
+    
+!    ! Movement des blocs
+!    WHILE TRUE DO
+!        Deplacement_blocs;
+!    ENDWHILE
     
 	! Aller en position « home »
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
@@ -364,7 +369,7 @@ PROC verPositionAxes()
     IF erreurDetectee THEN
         TPWrite msgErreur;                              ! Afficher les articulations fautives avec écarts
         TPWrite "Position initiale invalide. Programme arrêté.";
-        Exit;                                           ! Arrêter l'exécution du programme
+        ! Exit;                                           ! Arrêter l'exécution du programme
     ELSE
         TPWrite "Position initiale validée.";           ! Aucun problème détecté
     ENDIF
