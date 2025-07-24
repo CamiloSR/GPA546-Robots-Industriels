@@ -14,19 +14,22 @@ MODULE Lab_4
 !  PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rRetrait:=[[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rCrayon:=[[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rSoudure:=[[-66.69,1008.93,496.08],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   PERS robtarget rPriseGli:=[[-248.62,671.10,415.09],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepotGli:=[[-432.49,814.95,578.44],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepot:=[[201.58,790.42,377.17],[0.00756759,-0.709954,-0.704175,-0.00677517],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[201.58,790.42,713.35],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rCrayon:=[[-66.69,1008.93,496.08],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rSoudure:=[[-66.69,1008.93,496.08],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rFeuille_x:=[[0.11,669.58,406.28],[0.0154746,0.916956,0.0408178,0.396593],[1,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rFeuille_y:=[[0.11,883.12,406.28],[0.0154747,0.916956,0.0408176,0.396593],[1,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Orientation Crayon insiede this one:
   ! PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Position calculée
   VAR robtarget rDepot_new;
+  VAR robtarget rFeuille_z;
 
   ! Constantes
   CONST num Epaisseur   := 1;     ! Épaisseur d'un bloc (en pouces)
@@ -35,6 +38,10 @@ MODULE Lab_4
 
   ! Variables
   VAR num EpaisMM := Epaisseur * PouceToMM;
+  VAR num angleDeg := 45;
+  VAR pos pos_rRetrait;
+  VAR pos pos_Actuelle;
+  VAR num calcDistance;
 
   ! Vitesses d'approche/retrait (mm/s)
   CONST speeddata LowSpeed:=[250,500,5000,1000];
@@ -77,6 +84,7 @@ MODULE Lab_4
 !**************************************************************************************
 VAR intnum soudureInterrupt;   ! Any unused interrupt number
 VAR bool soudureDemandee := FALSE;
+VAR bool lampeBleueActive := FALSE;
 
 TRAP DemandeSoudure
     soudureDemandee := TRUE;
@@ -85,19 +93,86 @@ TRAP DemandeSoudure
 ENDTRAP
 
 PROC SimulerSoudure()
+    VAR num angle := 60 * 3.14159265 / 180; ! 60° en radians
+    VAR pos dirRot;
+    VAR pos vecXY;
+    VAR pos dirXY;
+    VAR robtarget rFeuille_1;
+    VAR robtarget rFeuille_2;
+    VAR num vecNorm;
+
+    LeCrayon\Prise;
+
+    MoveJ RelTool(rFeuille_x,0,0,Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rFeuille_x,0,0,Decalage \Rx := angleDeg), LowSpeed, z50, tCrayon\wobj:=wobj0;
     SetDO lampeOrange, 1;
-    MoveJ RelTool(rCrayon,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
-    MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
-    WaitTime 0.5;
-    Pince\Fermer;
-    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
     WaitTime 1;
-    Pince\Ouvert;
-    WaitTime 1;
+
+    ! ------- Triangle motion begins here -------
+    vecXY := [rFeuille_y.trans.x - rFeuille_x.trans.x,
+              rFeuille_y.trans.y - rFeuille_x.trans.y,
+              rFeuille_y.trans.z - rFeuille_x.trans.z];
+
+    vecNorm := Sqrt(Pow(vecXY.x,2) + Pow(vecXY.y,2) + Pow(vecXY.z,2));
+    dirXY.x := vecXY.x / vecNorm;
+    dirXY.y := vecXY.y / vecNorm;
+    dirXY.z := vecXY.z / vecNorm;
+
+    rFeuille_1 := rFeuille_x;
+    rFeuille_1.trans := rFeuille_x.trans + 50 * dirXY;
+
+    dirRot.x := dirXY.x * Cos(angle) - dirXY.y * Sin(angle);
+    dirRot.y := dirXY.x * Sin(angle) + dirXY.y * Cos(angle);
+    dirRot.z := dirXY.z;
+
+    rFeuille_2 := rFeuille_1;
+    rFeuille_2.trans := rFeuille_1.trans + 50 * dirRot;
+
+    rFeuille_z := rFeuille_2;
+
+    MoveL rFeuille_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
+    MoveL rFeuille_2, LowSpeed, z10, tCrayon\WObj:=wobj0;
+    MoveL rFeuille_x, LowSpeed, z10, tCrayon\WObj:=wobj0;
+    ! ------- Triangle motion ends here -------
+
+    LeCrayon\Deposer;
     soudureDemandee := FALSE;
     SetDO lampeOrange, 0;
     IWatch soudureInterrupt;
 ENDPROC
+
+
+PROC LeCrayon(\switch Prise | switch Deposer)
+    MoveJ RelTool(rCrayon,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL rCrayon, LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    IF Present(Prise) THEN
+        Pince\Fermer;
+    ELSE
+        Pince\Ouvert;
+    ENDIF
+    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+ENDPROC
+
+PROC SurveillanceProximite()
+    pos_rRetrait := rRetrait.trans;
+    pos_Actuelle := CPos(\Tool:=tPince_bloc, \WObj:=wobj0);
+    calcDistance := Distance(pos_Actuelle, pos_rRetrait);
+
+    IF calcDistance < 150 THEN
+        IF NOT lampeBleueActive THEN
+            SetDO lampeBleue, 1;
+            lampeBleueActive := TRUE;
+            TPWrite "Trop proche de rRetrait (<150 mm)";
+        ENDIF
+    ELSE
+        IF lampeBleueActive THEN
+            SetDO lampeBleue, 0;
+            lampeBleueActive := FALSE;
+            TPWrite "Éloigné de rRetrait (>150 mm)";
+        ENDIF
+    ENDIF
+ENDPROC
+
 
 !*************************************************************************************
 ! ------------------------------------------------------------------------------
@@ -107,6 +182,7 @@ PROC main()
 	! Initialisation
     configIO;           ! Mappage I/O + contrôles
 	init;               ! Configurations initiales
+!    Start SurveillanceProximite;
     CONNECT soudureInterrupt WITH DemandeSoudure;
     ISignalDI boutonSoudureDI, low, soudureInterrupt;
 
@@ -255,17 +331,17 @@ PROC verPositionAxes()
     ! Comparaison articulation par articulation (de J1 à J6)
     FOR i FROM 1 TO 6 DO
         IF i = 1 THEN
-            delta := abs_val(posActuelle.robax.rax_1 - posReference.robax.rax_1);
+            delta := fun_abs_val(posActuelle.robax.rax_1 - posReference.robax.rax_1);
         ELSEIF i = 2 THEN
-            delta := abs_val(posActuelle.robax.rax_2 - posReference.robax.rax_2);
+            delta := fun_abs_val(posActuelle.robax.rax_2 - posReference.robax.rax_2);
         ELSEIF i = 3 THEN
-            delta := abs_val(posActuelle.robax.rax_3 - posReference.robax.rax_3);
+            delta := fun_abs_val(posActuelle.robax.rax_3 - posReference.robax.rax_3);
         ELSEIF i = 4 THEN
-            delta := abs_val(posActuelle.robax.rax_4 - posReference.robax.rax_4);
+            delta := fun_abs_val(posActuelle.robax.rax_4 - posReference.robax.rax_4);
         ELSEIF i = 5 THEN
-            delta := abs_val(posActuelle.robax.rax_5 - posReference.robax.rax_5);
+            delta := fun_abs_val(posActuelle.robax.rax_5 - posReference.robax.rax_5);
         ELSEIF i = 6 THEN
-            delta := abs_val(posActuelle.robax.rax_6 - posReference.robax.rax_6);
+            delta := fun_abs_val(posActuelle.robax.rax_6 - posReference.robax.rax_6);
         ENDIF
 
         ! calcul du seuil selon l'articulation
@@ -392,26 +468,6 @@ ENDPROC
 ! ----------------------------------------------------------------------------
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
-PROC Crayon(\switch Prise | switch Depot)
-    ! Action sur le Crayon
-    ! Approche rapide offset Z pour éviter les collisions
-    MoveJ RelTool(rCrayon,0,0,Decalage*2), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
-    ! Descente linéaire à vitesse réduite pour un positionnement précis
-	MoveL rCrayon, LowSpeed, fine, tPince_bloc;
-	! Ouvir ou Fermer la Pince selon besoin
-    IF Present(Prise) THEN
-	    Pince\Fermer;
-    ELSE
-        Pince\Ouvert;
-    ENDIF
-	! Remontée linéaire vers la position d'approche (offset Z)
-	MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
-ENDPROC
-
-!**************************************************************************************
-! ----------------------------------------------------------------------------
-! ----------------------------------------------------------------------------
-!**************************************************************************************
 PROC Deplacement_blocs()
     VAR num bloc;
     VAR num b := 2;
@@ -464,7 +520,7 @@ ENDPROC
 !**************************************************************************************
 !**************************************************************************************
 
- FUNC num abs_val(num x)
+ FUNC num fun_abs_val(num x)
      IF x >= 0 THEN
          RETURN x;
      ELSE
