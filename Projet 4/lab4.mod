@@ -9,21 +9,21 @@ MODULE Lab_4
 ! -------------------------------------------------------------------------------------
 
   ! Positions pré-définies VRAI ROBOT
-!  PERS robtarget rPriseGli:=[[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rDepotGli:=[[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rRetrait:=[[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rCrayon:=[[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rSoudure_1:=[[53.09,674.02,300.26],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rSoudure_2:=[[53.09,878.41,300.26],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rPriseGli:=[[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepotGli:=[[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rRetrait:=[[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rCrayon:=[[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rSoudure_1:=[[-175.18,-1041.29,351.25],[0.00391247,-0.645351,0.763845,0.00688849],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rSoudure_2:=[[-142.57,-837.02,351.29],[0.00391263,-0.645347,0.763849,0.00688715],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-  PERS robtarget rPriseGli:=[[-248.62,671.10,350.13],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepotGli:=[[-432.49,814.95,513.48],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rDepot:=[[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rRetrait:=[[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rCrayon:=[[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rSoudure_1:=[[53.09,669.89,366.55],[0.00756773,-0.709954,-0.704175,-0.00677538],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rSoudure_2:=[[53.09,719.89,366.55],[0.00756773,-0.709954,-0.704175,-0.00677538],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rPriseGli:=[[-248.62,671.10,350.13],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rDepotGli:=[[-432.49,814.95,513.48],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rDepot:=[[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rRetrait:=[[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rCrayon:=[[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rSoudure_1:=[[53.09,669.89,366.55],[0.00756773,-0.709954,-0.704175,-0.00677538],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rSoudure_2:=[[53.09,719.89,366.55],[0.00756773,-0.709954,-0.704175,-0.00677538],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Orientation Crayon insiede this one:
   ! PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -101,7 +101,7 @@ FUNC robtarget CalculerTroisiemePoint(robtarget r1, robtarget r2)
     VAR num vecNorm;
     VAR pos unitVec;
     VAR pos vecRot;
-    VAR num angle := 60 * 3.14159265 / 180;
+    VAR num angle := 30 * 3.14159265 / 180;
 
     vec.x := r2.trans.x - r1.trans.x;
     vec.y := r2.trans.y - r1.trans.y;
@@ -128,9 +128,12 @@ ENDFUNC
 PROC SimulerSoudure()
     VAR pos vecXY;
     VAR num vecNorm;
+    VAR num transl_x;
+    VAR num transl_y;
+    VAR num angle := 30 * 3.14159265 / 180;
     VAR pos dirXY;
     VAR robtarget rSoudure_2_calc;
-    VAR robtarget rSoudure_3;
+    VAR robtarget rSoud_3_temp;
 
     LeCrayon\Prise;
     
@@ -148,27 +151,31 @@ PROC SimulerSoudure()
     rSoudure_2_calc.trans.x := rSoudure_1.trans.x + 50 * dirXY.x;
     rSoudure_2_calc.trans.y := rSoudure_1.trans.y + 50 * dirXY.y;
     rSoudure_2_calc.trans.z := rSoudure_1.trans.z + 50 * dirXY.z;
+    
+    transl_x := 50 * Sin(angle);
+    transl_y := 50 * Cos(angle);
+    
+    rSoud_3_temp := RelTool(rSoudure_2_calc, 0, 0, 0 \Rz := 60);
+    rSoudure_3 := RelTool(rSoud_3_temp, transl_x, transl_y, 0);
 
     ! Calcul du troisième point avec la fonction
-    rSoudure_3 := CalculerTroisiemePoint(rSoudure_1, rSoudure_2_calc);
+!    rSoudure_3 := CalculerTroisiemePoint(rSoudure_2_calc, rSoudure_1);
 
     MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;  ! tCrayon
-    MoveJ RelTool(rSoudure_1, 0, 0, Decalage \Rx := angleDeg), LowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1, 0, 0, 0 \Rx:= 45), LowSpeed, fine, tCrayon\wobj:=wobj0;
 
     SetDO lampeOrange, 1;
-    WaitTime 1;
+    WaitTime 0.5;
 
     ! Trajectoire triangulaire
-    MoveL rSoudure_1, LowSpeed, fine, tCrayon\wobj:=wobj0;
-    MoveL rSoudure_2_calc, VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
-    MoveL rSoudure_3, VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
-    MoveL rSoudure_1, VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
-    
-    WaitTime 1;
+    MoveL RelTool(rSoudure_2_calc, 0, 0, 0 \Rx:= 45), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL RelTool(rSoudure_3, 0, 0, 0 \Rx:= 45), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL RelTool(rSoudure_1, 0, 0, 0 \Rx:= 45), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    SetDO lampeOrange, 0;
+    WaitTime 0.5;
 
     LeCrayon\Deposer;
     soudureDemandee := FALSE;
-    SetDO lampeOrange, 0;
     IWatch soudureInterrupt;
 ENDPROC
 
