@@ -22,11 +22,13 @@ MODULE Lab_4
   PERS robtarget rDepot:=[[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rCrayon:=[[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rSoudure_1:=[[53.09,674.02,366.55],[0.00756777,-0.709954,-0.704175,-0.00677542],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rSoudure_2:=[[53.09,887.10,366.55],[0.00756775,-0.709954,-0.704175,-0.0067754],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rSoudure_1:=[[53.09,669.89,366.55],[0.00756773,-0.709954,-0.704175,-0.00677538],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rSoudure_2:=[[53.09,719.89,366.55],[0.00756773,-0.709954,-0.704175,-0.00677538],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Orientation Crayon insiede this one:
   ! PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  
+  PERS speeddata VeryLowSpeed := [5, 500, 5000, 1000];
 
   ! Position calculée
   VAR robtarget rDepot_new;
@@ -93,54 +95,82 @@ TRAP DemandeSoudure
     TPWrite "Soudure demandée! Sera exécutée après ce bloc.";
 ENDTRAP
 
-PROC SimulerSoudure()
-    VAR num angle := 60 * 3.14159265 / 180; ! 60° en radians
-    VAR pos dirRot;
-    VAR pos vecXY;
-    VAR pos dirXY;
+FUNC robtarget CalculerTroisiemePoint(robtarget r1, robtarget r2)
+    VAR robtarget r3;
+    VAR pos vec;
     VAR num vecNorm;
+    VAR pos unitVec;
+    VAR pos vecRot;
+    VAR num angle := 60 * 3.14159265 / 180;
+
+    vec.x := r2.trans.x - r1.trans.x;
+    vec.y := r2.trans.y - r1.trans.y;
+    vec.z := r2.trans.z - r1.trans.z;
+
+    vecNorm := Sqrt(Pow(vec.x,2) + Pow(vec.y,2) + Pow(vec.z,2));
+
+    unitVec.x := vec.x / vecNorm;
+    unitVec.y := vec.y / vecNorm;
+    unitVec.z := vec.z / vecNorm;
+
+    vecRot.x := unitVec.x * Cos(angle) - unitVec.y * Sin(angle);
+    vecRot.y := unitVec.x * Sin(angle) + unitVec.y * Cos(angle);
+    vecRot.z := unitVec.z;
+
+    r3 := r1;
+    r3.trans.x := r1.trans.x + vecRot.x * vecNorm;
+    r3.trans.y := r1.trans.y + vecRot.y * vecNorm;
+    r3.trans.z := r1.trans.z + vecRot.z * vecNorm;
+
+    RETURN r3;
+ENDFUNC
+
+PROC SimulerSoudure()
+    VAR pos vecXY;
+    VAR num vecNorm;
+    VAR pos dirXY;
+    VAR robtarget rSoudure_2_calc;
+    VAR robtarget rSoudure_3;
 
     LeCrayon\Prise;
-
-    MoveJ RelTool(rSoudure_1,0,0,Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
-    MoveJ RelTool(rSoudure_1,0,0,Decalage \Rx := angleDeg), LowSpeed, fine, tCrayon\wobj:=wobj0;  ! tCrayon\wobj:=wobj0
     
+    ! Recalcul de rSoudure_2 à 50 mm dans la direction initiale
+    vecXY := [
+        rSoudure_2.trans.x - rSoudure_1.trans.x,
+        rSoudure_2.trans.y - rSoudure_1.trans.y,
+        rSoudure_2.trans.z - rSoudure_1.trans.z
+    ];
+
+    vecNorm := Sqrt(Pow(vecXY.x,2) + Pow(vecXY.y,2) + Pow(vecXY.z,2));
+    dirXY := [vecXY.x / vecNorm, vecXY.y / vecNorm, vecXY.z / vecNorm];
+
+    rSoudure_2_calc := rSoudure_1;
+    rSoudure_2_calc.trans.x := rSoudure_1.trans.x + 50 * dirXY.x;
+    rSoudure_2_calc.trans.y := rSoudure_1.trans.y + 50 * dirXY.y;
+    rSoudure_2_calc.trans.z := rSoudure_1.trans.z + 50 * dirXY.z;
+
+    ! Calcul du troisième point avec la fonction
+    rSoudure_3 := CalculerTroisiemePoint(rSoudure_1, rSoudure_2_calc);
+
+    MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;  ! tCrayon
+    MoveJ RelTool(rSoudure_1, 0, 0, Decalage \Rx := angleDeg), LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+
     SetDO lampeOrange, 1;
     WaitTime 1;
 
-    ! ------- Triangle motion begins here -------
-    vecXY := [rSoudure_2.trans.x - rSoudure_1.trans.x,
-              rSoudure_2.trans.y - rSoudure_1.trans.y,
-              rSoudure_2.trans.z - rSoudure_1.trans.z];
-
-    vecNorm := Sqrt(Pow(vecXY.x,2) + Pow(vecXY.y,2) + Pow(vecXY.z,2));
-    dirXY.x := vecXY.x / vecNorm;
-    dirXY.y := vecXY.y / vecNorm;
-    dirXY.z := vecXY.z / vecNorm;
-
-    rSoudure_1 := rSoudure_1;
-    rSoudure_1.trans := rSoudure_1.trans + 50 * dirXY;
-
-    dirRot.x := dirXY.x * Cos(angle) - dirXY.y * Sin(angle);
-    dirRot.y := dirXY.x * Sin(angle) + dirXY.y * Cos(angle);
-    dirRot.z := dirXY.z;
-
-    rSoudure_2:= rSoudure_1;
-    rSoudure_2.trans := rSoudure_1.trans + 50 * dirRot;
-
-    rSoudure_3 := rSoudure_2;
-
-    MoveL rSoudure_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
-    MoveL rSoudure_2, LowSpeed, z10, tCrayon\WObj:=wobj0;
-    MoveL rSoudure_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
-    ! ------- Triangle motion ends here -------
+    ! Trajectoire triangulaire
+!    MoveL rSoudure_1, LowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL rSoudure_2_calc, VeryLowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveL rSoudure_3, VeryLowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveL rSoudure_1, VeryLowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    
+    WaitTime 1;
 
     LeCrayon\Deposer;
     soudureDemandee := FALSE;
     SetDO lampeOrange, 0;
     IWatch soudureInterrupt;
 ENDPROC
-
 
 PROC LeCrayon(\switch Prise | switch Deposer)
     MoveJ RelTool(rCrayon,0,0,Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;
