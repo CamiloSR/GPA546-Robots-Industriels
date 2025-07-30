@@ -14,24 +14,23 @@ MODULE Lab_4
 !  PERS robtarget rDepot:=[[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rRetrait:=[[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 !  PERS robtarget rCrayon:=[[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rSoudure:=[[-66.69,1008.93,496.08],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rFeuille_1:=[[53.09,674.02,300.26],[0.00149329,-0.990714,-0.13595,0.000243871],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-!  PERS robtarget rFeuille_2:=[[53.09,878.41,300.26],[0.0014932,-0.990714,-0.13595,0.000243892],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rSoudure_1:=[[53.09,674.02,300.26],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+!  PERS robtarget rSoudure_2:=[[53.09,878.41,300.26],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   PERS robtarget rPriseGli:=[[-248.62,671.10,350.13],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepotGli:=[[-432.49,814.95,513.48],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rDepot:=[[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rRetrait:=[[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   PERS robtarget rCrayon:=[[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rFeuille_1:=[[53.09,674.02,300.26],[0.00149329,-0.990714,-0.13595,0.000243871],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-  PERS robtarget rFeuille_2:=[[53.09,878.41,300.26],[0.0014932,-0.990714,-0.13595,0.000243892],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rSoudure_1:=[[53.09,674.02,366.55],[0.00756777,-0.709954,-0.704175,-0.00677542],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+  PERS robtarget rSoudure_2:=[[53.09,887.10,366.55],[0.00756775,-0.709954,-0.704175,-0.0067754],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Orientation Crayon insiede this one:
   ! PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
   ! Position calculée
   VAR robtarget rDepot_new;
-  VAR robtarget rFeuille_z;
+  VAR robtarget rSoudure_3;
 
   ! Constantes
   CONST num Epaisseur   := 1;     ! Épaisseur d'un bloc (en pouces)
@@ -40,7 +39,7 @@ MODULE Lab_4
 
   ! Variables
   VAR num EpaisMM := Epaisseur * PouceToMM;
-  VAR num angleDeg := 45;
+  VAR num angleDeg := 0;
   VAR pos pos_rRetrait;
   VAR pos pos_Actuelle;
   VAR num calcDistance;
@@ -99,42 +98,42 @@ PROC SimulerSoudure()
     VAR pos dirRot;
     VAR pos vecXY;
     VAR pos dirXY;
-    VAR robtarget rFeuille_1;
-    VAR robtarget rFeuille_2;
+    VAR robtarget rSoudure_1;
+    VAR robtarget rSoudure_2;
     VAR num vecNorm;
 
     LeCrayon\Prise;
 
-    MoveJ RelTool(rFeuille_1,0,0,Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
-    MoveJ RelTool(rFeuille_1,0,0,Decalage \Rx := angleDeg), LowSpeed, z50, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1,0,0,Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1,0,0,Decalage \Rx := angleDeg), LowSpeed, fine, tCrayon\wobj:=wobj0;
     SetDO lampeOrange, 1;
     WaitTime 1;
 
     ! ------- Triangle motion begins here -------
-    vecXY := [rFeuille_2.trans.x - rFeuille_1.trans.x,
-              rFeuille_2.trans.y - rFeuille_1.trans.y,
-              rFeuille_2.trans.z - rFeuille_1.trans.z];
+    vecXY := [rSoudure_2.trans.x - rSoudure_1.trans.x,
+              rSoudure_2.trans.y - rSoudure_1.trans.y,
+              rSoudure_2.trans.z - rSoudure_1.trans.z];
 
     vecNorm := Sqrt(Pow(vecXY.x,2) + Pow(vecXY.y,2) + Pow(vecXY.z,2));
     dirXY.x := vecXY.x / vecNorm;
     dirXY.y := vecXY.y / vecNorm;
     dirXY.z := vecXY.z / vecNorm;
 
-    rFeuille_1 := rFeuille_1;
-    rFeuille_1.trans := rFeuille_1.trans + 50 * dirXY;
+    rSoudure_1 := rSoudure_1;
+    rSoudure_1.trans := rSoudure_1.trans + 50 * dirXY;
 
     dirRot.x := dirXY.x * Cos(angle) - dirXY.y * Sin(angle);
     dirRot.y := dirXY.x * Sin(angle) + dirXY.y * Cos(angle);
     dirRot.z := dirXY.z;
 
-    rFeuille_2 := rFeuille_1;
-    rFeuille_2.trans := rFeuille_1.trans + 50 * dirRot;
+    rSoudure_2:= rSoudure_1;
+    rSoudure_2.trans := rSoudure_1.trans + 50 * dirRot;
 
-    rFeuille_z := rFeuille_2;
+    rSoudure_3 := rSoudure_2;
 
-    MoveL rFeuille_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
-    MoveL rFeuille_2, LowSpeed, z10, tCrayon\WObj:=wobj0;
-    MoveL rFeuille_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
+    MoveL rSoudure_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
+    MoveL rSoudure_2, LowSpeed, z10, tCrayon\WObj:=wobj0;
+    MoveL rSoudure_1, LowSpeed, z10, tCrayon\WObj:=wobj0;
     ! ------- Triangle motion ends here -------
 
     LeCrayon\Deposer;
@@ -153,7 +152,7 @@ PROC LeCrayon(\switch Prise | switch Deposer)
     ELSE
         Pince\Ouvert;
     ENDIF
-    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
+    MoveL RelTool(rCrayon,0,0,Decalage), LowSpeed, fine, tPince_bloc\wobj:=wobj0;
 ENDPROC
 
 PROC SurveillanceProximite()
@@ -189,7 +188,7 @@ PROC main()
     CONNECT soudureInterrupt WITH DemandeSoudure;
     ISignalDI boutonSoudureDI, low, soudureInterrupt;
 
-    verPositionAxes;    ! Vérification de positionnement des axes
+    verifPositionAxes;    ! Vérification de positionnement des axes
     
     ! Calculs
 	EpaisMM := Epaisseur * PouceToMM;          ! Conversion en mm
@@ -318,7 +317,7 @@ ENDPROC
 ! ----------------------------------------------------------------------------
 !**************************************************************************************
 !**************************************************************************************
-PROC verPositionAxes()
+PROC verifPositionAxes()
     ! Déclaration des variables
     VAR jointtarget posActuelle;          ! Position articulaire actuelle du robot
     VAR jointtarget posReference;         ! Position articulaire de référence (calculée à partir de rRetrait)
