@@ -152,17 +152,17 @@ PROC SimulerSoudure()
     ! Calcul du troisième point avec la fonction
     rSoudure_3 := CalculerTroisiemePoint(rSoudure_1, rSoudure_2_calc);
 
-    MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tPince_bloc\wobj:=wobj0;  ! tCrayon
-    MoveJ RelTool(rSoudure_1, 0, 0, Decalage \Rx := angleDeg), LowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;  ! tCrayon
+    MoveJ RelTool(rSoudure_1, 0, 0, Decalage \Rx := angleDeg), LowSpeed, fine, tCrayon\wobj:=wobj0;
 
     SetDO lampeOrange, 1;
     WaitTime 1;
 
     ! Trajectoire triangulaire
-!    MoveL rSoudure_1, LowSpeed, fine, tCrayon\wobj:=wobj0;
-    MoveL rSoudure_2_calc, VeryLowSpeed, fine, tPince_bloc\wobj:=wobj0;
-    MoveL rSoudure_3, VeryLowSpeed, fine, tPince_bloc\wobj:=wobj0;
-    MoveL rSoudure_1, VeryLowSpeed, fine, tPince_bloc\wobj:=wobj0;
+    MoveL rSoudure_1, LowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL rSoudure_2_calc, VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL rSoudure_3, VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL rSoudure_1, VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
     
     WaitTime 1;
 
