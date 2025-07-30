@@ -95,42 +95,13 @@ TRAP DemandeSoudure
     TPWrite "Soudure demandée! Sera exécutée après ce bloc.";
 ENDTRAP
 
-FUNC robtarget CalculerTroisiemePoint(robtarget r1, robtarget r2)
-    VAR robtarget r3;
-    VAR pos vec;
-    VAR num vecNorm;
-    VAR pos unitVec;
-    VAR pos vecRot;
-    VAR num angle := 30 * 3.14159265 / 180;
-
-    vec.x := r2.trans.x - r1.trans.x;
-    vec.y := r2.trans.y - r1.trans.y;
-    vec.z := r2.trans.z - r1.trans.z;
-
-    vecNorm := Sqrt(Pow(vec.x,2) + Pow(vec.y,2) + Pow(vec.z,2));
-
-    unitVec.x := vec.x / vecNorm;
-    unitVec.y := vec.y / vecNorm;
-    unitVec.z := vec.z / vecNorm;
-
-    vecRot.x := unitVec.x * Cos(angle) - unitVec.y * Sin(angle);
-    vecRot.y := unitVec.x * Sin(angle) + unitVec.y * Cos(angle);
-    vecRot.z := unitVec.z;
-
-    r3 := r1;
-    r3.trans.x := r1.trans.x + vecRot.x * vecNorm;
-    r3.trans.y := r1.trans.y + vecRot.y * vecNorm;
-    r3.trans.z := r1.trans.z + vecRot.z * vecNorm;
-
-    RETURN r3;
-ENDFUNC
-
 PROC SimulerSoudure()
     VAR pos vecXY;
     VAR num vecNorm;
     VAR num transl_x;
     VAR num transl_y;
-    VAR num angle := 30 * 3.14159265 / 180;
+    VAR num angle_triangle := 30 * 3.14159265 / 180;
+    VAR num angle_soudure := 35;
     VAR pos dirXY;
     VAR robtarget rSoudure_2_calc;
     VAR robtarget rSoud_3_temp;
@@ -152,25 +123,23 @@ PROC SimulerSoudure()
     rSoudure_2_calc.trans.y := rSoudure_1.trans.y + 50 * dirXY.y;
     rSoudure_2_calc.trans.z := rSoudure_1.trans.z + 50 * dirXY.z;
     
-    transl_x := 50 * Sin(angle);
-    transl_y := 50 * Cos(angle);
-    
-    rSoud_3_temp := RelTool(rSoudure_2_calc, 0, 0, 0 \Rz := 60);
-    rSoudure_3 := RelTool(rSoud_3_temp, transl_x, transl_y, 0);
-
     ! Calcul du troisième point avec la fonction
-!    rSoudure_3 := CalculerTroisiemePoint(rSoudure_2_calc, rSoudure_1);
+    transl_x := 50 * Cos(angle_triangle);
+    transl_y := 50 * Sin(angle_triangle);
+    
+    rSoud_3_temp := RelTool(rSoudure_2_calc, 0, 0, 0 \Rz := -60);
+    rSoudure_3 := RelTool(rSoud_3_temp, transl_x, -transl_y, 0);
 
-    MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;  ! tCrayon
-    MoveJ RelTool(rSoudure_1, 0, 0, 0 \Rx:= 45), LowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1, 0, 0, 0 \Rx:= angle_soudure), LowSpeed, fine, tCrayon\wobj:=wobj0;
 
     SetDO lampeOrange, 1;
     WaitTime 0.5;
 
     ! Trajectoire triangulaire
-    MoveL RelTool(rSoudure_2_calc, 0, 0, 0 \Rx:= 45), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
-    MoveL RelTool(rSoudure_3, 0, 0, 0 \Rx:= 45), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
-    MoveL RelTool(rSoudure_1, 0, 0, 0 \Rx:= 45), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL RelTool(rSoudure_2_calc, 0, 0, 0 \Rx:= angle_soudure), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL RelTool(rSoudure_3, 0, 0, 0 \Rx:= angle_soudure), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveL RelTool(rSoudure_1, 0, 0, 0 \Rx:= angle_soudure), VeryLowSpeed, fine, tCrayon\wobj:=wobj0;
     SetDO lampeOrange, 0;
     WaitTime 0.5;
 
@@ -229,14 +198,14 @@ PROC main()
     ! Calculs
 	EpaisMM := Epaisseur * PouceToMM;          ! Conversion en mm
     
-    WHILE TRUE DO
-        SimulerSoudure;
-    ENDWHILE
-    
-!    ! Movement des blocs
 !    WHILE TRUE DO
-!        Deplacement_blocs;
+!        SimulerSoudure;
 !    ENDWHILE
+    
+    ! Movement des blocs
+    WHILE TRUE DO
+        Deplacement_blocs;
+    ENDWHILE
     
 	! Aller en position « home »
 	MoveJ rRetrait, HighSpeed, fine, tPince_bloc\wobj:=wobj0;
