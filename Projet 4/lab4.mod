@@ -98,14 +98,13 @@ PROC SimulerSoudure()
     VAR pos dirRot;
     VAR pos vecXY;
     VAR pos dirXY;
-    VAR robtarget rSoudure_1;
-    VAR robtarget rSoudure_2;
     VAR num vecNorm;
 
     LeCrayon\Prise;
 
     MoveJ RelTool(rSoudure_1,0,0,Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
-    MoveJ RelTool(rSoudure_1,0,0,Decalage \Rx := angleDeg), LowSpeed, fine, tCrayon\wobj:=wobj0;
+    MoveJ RelTool(rSoudure_1,0,0,Decalage \Rx := angleDeg), LowSpeed, fine, tCrayon\wobj:=wobj0;  ! tCrayon\wobj:=wobj0
+    
     SetDO lampeOrange, 1;
     WaitTime 1;
 
