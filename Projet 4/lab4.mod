@@ -28,7 +28,7 @@ MODULE Lab_4
   ! Orientation Crayon insiede this one:
   ! PERS robtarget rDepot:=[[290.71,780.85,391.27],[0.00116785,-0.919386,0.00812619,-0.39327],[0,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
   
-  PERS speeddata VeryLowSpeed := [5, 500, 5000, 1000];
+  PERS speeddata VeryLowSpeed := [25, 500, 5000, 1000];
 
   ! Position calculée
   VAR robtarget rDepot_new;
