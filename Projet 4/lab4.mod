@@ -123,12 +123,22 @@ PROC SimulerSoudure()
     rSoudure_2_calc.trans.y := rSoudure_1.trans.y + 50 * dirXY.y;
     rSoudure_2_calc.trans.z := rSoudure_1.trans.z + 50 * dirXY.z;
     
-    ! Calcul du troisième point avec la fonction
-    transl_x := 50 * Cos(angle_triangle);
-    transl_y := 50 * Sin(angle_triangle);
-    
-    rSoud_3_temp := RelTool(rSoudure_2_calc, 0, 0, 0 \Rz := -60);
-    rSoudure_3 := RelTool(rSoud_3_temp, transl_x, -transl_y, 0);
+    ! Calcul du troisième point avec la fonction    
+    IF RobOS() THEN
+        ! Calcul pour le Vrai Robot
+        transl_x := 50 * Cos(angle_triangle);
+        transl_y := 50 * Sin(angle_triangle);
+        
+        rSoud_3_temp := RelTool(rSoudure_2_calc, 0, 0, 0 \Rz := -60);
+        rSoudure_3 := RelTool(rSoud_3_temp, transl_x, -transl_y, 0);
+    ELSE
+        ! Calcul pour le Virtual Controller
+        transl_x := 50 * Sin(angle_triangle);
+        transl_y := 50 * Cos(angle_triangle);
+        
+        rSoud_3_temp := RelTool(rSoudure_2_calc, 0, 0, 0 \Rz := 60);
+        rSoudure_3 := RelTool(rSoud_3_temp, transl_x, transl_y, 0);
+    ENDIF
 
     MoveJ RelTool(rSoudure_1, 0, 0, Decalage), HighSpeed, z50, tCrayon\wobj:=wobj0;
     MoveJ RelTool(rSoudure_1, 0, 0, 0 \Rx:= angle_soudure), LowSpeed, fine, tCrayon\wobj:=wobj0;
