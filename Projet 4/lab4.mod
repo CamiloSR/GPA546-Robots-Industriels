@@ -58,8 +58,10 @@ MODULE Lab_4
   CONST dionum Extension := 1;
 
   ! Zone de travail restreinte du robot
-  VAR wztemporary EspaceRestreint;
-  
+  VAR wztemporary LimArtic;          ! Supervision de la limite des joints
+  VAR wztemporary ZoneProximite;   ! Sphère de 150 mm autour de rRetrait
+  VAR shapedata sphProximite;
+
  ! ----------------------------------------------------------------------------
  ! ----------------------------------------------------------------------------
 
@@ -316,10 +318,17 @@ PROC init()
 	! low_pos:=[[ -104, -25, -85, -90, -103, -289 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
 	! high_pos:=[[ -28, 55, 55, 90, 103, 109 ],[ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9 ]];
 
-	! Activation de la limitation (obligatoire)
-	WZFree EspaceRestreint;
-	WZLimJointDef \Outside, joint_space, low_pos, high_pos;
-	WZLimSup \Temp, EspaceRestreint, joint_space;
+    
+    ! Activation de la limitation (obligatoire)
+    ! ---------- Limitation de l'espace joint ----------
+    WZFree  LimArtic;
+    WZLimJointDef \Outside, joint_space, low_pos, high_pos;
+    WZLimSup      \Temp,    LimArtic,   joint_space;
+
+    ! ---------- Sphère de proximité ----------------
+    WZFree  ZoneProximite;
+    WZSphDef \Inside, sphProximite, rRetrait.trans, 150;
+    WZDOSet  \Temp,   ZoneProximite \Inside, sphProximite, lampeBleue, 1;
 
     ! Limitation de vitesse pour la sécurité
 	VelSet 25,1000;
@@ -327,7 +336,7 @@ PROC init()
 	SetDO verinExtension, Retracte; ! ? alias au lieu de DO09_FV0101
 	! Ouvrir la pince
     Pince\Ouvert;
-
+    
 ENDPROC
 !**************************************************************************************
 ! ----------------------------------------------------------------------------
