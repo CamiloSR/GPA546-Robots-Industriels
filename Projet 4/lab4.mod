@@ -1,39 +1,39 @@
 MODULE Lab_4
-! -------------------------------------------------------------------------------------
-! Programme : GPA546Lab4
-! Auteurs   : Olivier Millette ET Camilo Serna
-! Date      : 6 août 2025
-! Révision  : V0.0
-!
-! Description :
-!   Module de contrôle d'une cellule robotisée gérant la prise et le dépôt de blocs via une glissoire,
-!   la vérification des positions articulaires, la simulation de trajectoire de soudure avec indicateur lumineux,
-!   et la configuration des E/S pour commande de pince, vérin et lampes.
-! -------------------------------------------------------------------------------------
-
-! =====================================================================================
-!   Déclarations des variables et constantes du Module
-! =====================================================================================
-! ---------- Positions cibles persistantes (PERS) - VIRTUAL ROBOT ----------
-PERS robtarget rPriseGli:=[[-248.62,671.10,350.13],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];          ! Position glissoire prise
-PERS robtarget rDepotGli:=[[-432.49,814.95,513.48],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];           ! Position glissoire dépôt
-PERS robtarget rDepot:=[[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];        ! Position dépôt bloc
-PERS robtarget rRetrait:=[[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];        ! Position retrait bloc
-PERS robtarget rCrayon:=[[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];       ! Position crayon
-PERS robtarget rSoudure_1:=[[53.09,671.46,299.54],[0.0075679,-0.709954,-0.704175,-0.00677558],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];      ! Point soudure 1
-PERS robtarget rSoudure_2:=[[47.57,868.31,299.54],[0.00756788,-0.709954,-0.704175,-0.00677555],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];     ! Point soudure 2
+    ! -------------------------------------------------------------------------------------
+    ! Programme : GPA546Lab4
+    ! Auteurs   : Olivier Millette ET Camilo Serna
+    ! Date      : 6 août 2025
+    ! Révision  : V0.0
+    !
+    ! Description :
+    !   Module de contrôle d'une cellule robotisée gérant la prise et le dépôt de blocs via une glissoire,
+    !   la vérification des positions articulaires, la simulation de trajectoire de soudure avec indicateur lumineux,
+    !   et la configuration des E/S pour commande de pince, vérin et lampes.
+    ! -------------------------------------------------------------------------------------
+    
+    ! =====================================================================================
+    !   Déclarations des variables et constantes du Module Virtuelle
+    ! =====================================================================================
+!    ! ---------- Positions cibles persistantes (PERS) - VIRTUAL ROBOT ----------
+!    PERS robtarget rPriseGli:=[[-248.62,671.10,350.13],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];          ! Position glissoire prise
+!    PERS robtarget rDepotGli:=[[-432.49,814.95,513.48],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];           ! Position glissoire dépôt
+!    PERS robtarget rDepot:=[[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];        ! Position dépôt bloc
+!    PERS robtarget rRetrait:=[[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];        ! Position retrait bloc
+!    PERS robtarget rCrayon:=[[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];       ! Position crayon
+!    PERS robtarget rSoudure_1:=[[53.09,671.46,299.54],[0.0075679,-0.709954,-0.704175,-0.00677558],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];      ! Point soudure 1
+!    PERS robtarget rSoudure_2:=[[47.57,868.31,299.54],[0.00756788,-0.709954,-0.704175,-0.00677555],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];     ! Point soudure 2
 
     ! =====================================================================================
     !   DECLARATIONS GLOBALES DU MODULE
     ! =====================================================================================
-!    ! PERSISTENT ROBOT TARGETS (positions pre-definies) - Pour le VRAI ROBOT
-!    PERS robtarget rPriseGli   := [[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire prise
-!    PERS robtarget rDepotGli   := [[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire dépôt
-!    PERS robtarget rDepot      := [[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position dépôt bloc
-!    PERS robtarget rRetrait    := [[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position retrait bloc
-!    PERS robtarget rCrayon     := [[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position crayon
-!    PERS robtarget rSoudure_1  := [[-175.18,-1041.29,351.25],[0.00391247,-0.645351,0.763845,0.00688849],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Point soudure 1
-!    PERS robtarget rSoudure_2  := [[-142.57,-837.02,351.29],[0.00391263,-0.645347,0.763849,0.00688715],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Point soudure 2
+    ! PERSISTENT ROBOT TARGETS (positions pre-definies) - Pour le VRAI ROBOT
+    PERS robtarget rPriseGli   := [[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire prise
+    PERS robtarget rDepotGli   := [[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire dépôt
+    PERS robtarget rDepot      := [[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position dépôt bloc
+    PERS robtarget rRetrait    := [[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position retrait bloc
+    PERS robtarget rCrayon     := [[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position crayon
+    PERS robtarget rSoudure_1  := [[-175.18,-1041.29,351.25],[0.00391247,-0.645351,0.763845,0.00688849],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Point soudure 1
+    PERS robtarget rSoudure_2  := [[-142.57,-837.02,351.29],[0.00391263,-0.645347,0.763849,0.00688715],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Point soudure 2
 
     ! PERSISTENT SPEED DATA (vitesses pre-definies)
     PERS speeddata VeryLowSpeed := [25, 500, 5000, 1000];   ! Vitesse pour la soudure
