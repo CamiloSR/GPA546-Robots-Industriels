@@ -6,6 +6,9 @@ MODULE Lab_4
 ! Révision  : V0.0
 !
 ! Description :
+!   Module de contrôle d’une cellule robotisée gérant la prise et le dépôt de blocs via une glissoire,
+!   la vérification des positions articulaires, la simulation de trajectoire de soudure avec indicateur lumineux,
+!   et la configuration des E/S pour commande de pince, vérin et lampes.
 ! -------------------------------------------------------------------------------------
 
   ! Positions pré-définies VRAI ROBOT
