@@ -27,11 +27,11 @@ MODULE Lab_4
     !   DECLARATIONS GLOBALES DU MODULE
     ! =====================================================================================
     ! PERSISTENT ROBOT TARGETS (positions pre-definies) - Pour le VRAI ROBOT
-    PERS robtarget rPriseGli   := [[-660.73,-1058.86,419.28],[0.208833,0.621189,-0.717118,-0.237182],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire prise
-    PERS robtarget rDepotGli   := [[-851.42,-914.68,568.33],[0.211183,0.614,-0.723282,-0.235094],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire dépôt
-    PERS robtarget rDepot      := [[1.48,-964.60,368.18],[0.0173768,0.643389,-0.765217,0.0138353],[-1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position dépôt bloc
-    PERS robtarget rRetrait    := [[-380.03,-976.73,740.33],[0.0571998,0.646818,-0.758565,-0.0541672],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position retrait bloc
-    PERS robtarget rCrayon     := [[-460.90,-711.35,486.39],[0.00396694,-0.645432,0.763775,0.00698067],[-2,-1,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position crayon
+    PERS robtarget rPriseGli   := [[-248.62,671.1,350.13],[0.204826,-0.685379,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire prise
+    PERS robtarget rDepotGli   := [[-432.49,814.95,513.48],[0.204826,-0.68538,-0.673775,0.18528],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position glissoire dépôt
+    PERS robtarget rDepot      := [[201.58,790.42,312.21],[0.00756763,-0.709954,-0.704175,-0.00677525],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position dépôt bloc
+    PERS robtarget rRetrait    := [[201.58,790.42,648.19],[0.0075676,-0.709954,-0.704175,-0.0067752],[0,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position retrait bloc
+    PERS robtarget rCrayon     := [[-66.69,1008.93,431.12],[0.0114044,-0.709903,-0.704128,-0.0105808],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Position crayon
     PERS robtarget rSoudure_1  := [[-175.18,-1041.29,351.25],[0.00391247,-0.645351,0.763845,0.00688849],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Point soudure 1
     PERS robtarget rSoudure_2  := [[-142.57,-837.02,351.29],[0.00391263,-0.645347,0.763849,0.00688715],[-2,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]; ! Point soudure 2
 
@@ -179,7 +179,7 @@ MODULE Lab_4
         TPWrite "ERREUR: AliasIO a échoué pour le signal: " + sigName;
         TPWrite "Code d'erreur (ERRNO) = " \Num:=ERRNO;
         TPWrite "Programme arrêté.";
-        EXIT; ! Arrêt du programme en cas d’échec
+        EXIT; ! Arrêt du programme en cas d'échec
     ENDPROC
 
 !-----------------------------------------------------------------------
@@ -233,7 +233,7 @@ MODULE Lab_4
 !-----------------------------------------------------------------------
     PROC verifPositionAxes()
         ! Declaration des variables locales
-        VAR jointtarget posActuelle;        ! Angles actuels des axes J1–J6
+        VAR jointtarget posActuelle;        ! Angles actuels des axes J1-J6
         VAR jointtarget posReference;       ! Angles cibles calculés pour rRetrait
         VAR num delta;                      ! Écart angulaire pour chaque axe
         VAR bool erreurDetectee := FALSE;   ! True si un écart > seuil est détecté
@@ -275,7 +275,7 @@ MODULE Lab_4
             ! Si l'ecart depasse le seuil, on enregistre l'erreur
             IF delta > seuil THEN
                 erreurDetectee := TRUE;
-                tmp := "J" + NumToStr(i,0) + " (" + NumToStr(delta,1) + "°) ";
+                tmp := "J" + NumToStr(i,0) + "(" + NumToStr(delta,1) + "°)";
                 msgErreur := msgErreur + tmp; ! Ajoute l'info de l'axe au message
             ENDIF
         ENDFOR
@@ -377,7 +377,7 @@ MODULE Lab_4
             TPWrite "Aucun bloc dans la glissoire";
             TPWrite "Placer deux blocs et remettre en mode AUTO";
             ! Si pas de bloc, attendre la détection
-            WaitDI blocPresentPoussoir, 1;   ! Bloque jusqu’à ce qu'un bloc soit present
+            WaitDI blocPresentPoussoir, 1;   ! Bloque jusqu'à ce qu'un bloc soit present
             WaitTime 1;                      ! Petite pause pour stabiliser le bloc
         ENDIF
 
@@ -396,7 +396,7 @@ MODULE Lab_4
         SetDO verinExtension, Retracte;      ! Rétraction du vérin
         WaitDI verinRetracte, 1;             ! Attendre la fin de course de retraction
 
-        ! 7) Retrait du robot vers position d’approche hors zone de collision
+        ! 7) Retrait du robot vers position d'approche hors zone de collision
         MoveL RelTool(rPriseGli, 0, 0, Decalage), LowSpeed, z50, tPince_bloc\wobj:=wobj0;
     ENDPROC
 
@@ -537,13 +537,13 @@ MODULE Lab_4
 
         ! --- Etape 2: Calcul de la trajectoire triangulaire ---
 
-        ! Calcul du vecteur “vecXY” reliant rSoudure_1 à rSoudure_2
+        ! Calcul du vecteur "vecXY" reliant rSoudure_1 à rSoudure_2
         vecXY := [rSoudure_2.trans.x - rSoudure_1.trans.x, rSoudure_2.trans.y - rSoudure_1.trans.y, rSoudure_2.trans.z - rSoudure_1.trans.z];
 
         ! Norme du vecteur vecXY (distance 3D entre point 1 et 2)
         vecNorm := Sqrt(Pow(vecXY.x,2) + Pow(vecXY.y,2) + Pow(vecXY.z,2));
 
-        ! Vecteur unitaire “dirXY” (direction pure sans la magnitude)
+        ! Vecteur unitaire "dirXY" (direction pure sans la magnitude)
         dirXY := [vecXY.x / vecNorm, vecXY.y / vecNorm, vecXY.z / vecNorm];
 
         ! Calcule 'rSoudure_2_calc' a 50 mm du point 1 dans la direction de point 2
@@ -573,10 +573,10 @@ MODULE Lab_4
         ! 1) Approche rapide de la position de départ.
         MoveJ RelTool(rSoudure_1,0,0,Decalage), HighSpeed, fine, tCrayon\WObj:=wobj0;
     
-        ! 2) Préparer le trigger pour allumer la lampe au début de l’orientation.
+        ! 2) Préparer le trigger pour allumer la lampe au début de l'orientation.
         TriggL RelTool(rSoudure_1,0,0,0\Rx:=angle_soudure_deg), v100, trig_LightOn, fine, tCrayon\WObj:=wobj0;
     
-        ! 3) Orientation précise de l’outil (la lampe s’allume via le trigger défini).
+        ! 3) Orientation précise de l'outil (la lampe s'allume via le trigger défini).
         MoveJ RelTool(rSoudure_1,0,0,0\Rx:=angle_soudure_deg), VeryLowSpeed, fine, tCrayon\WObj:=wobj0;
     
         ! 4) Exécution du contour triangulaire à vitesse très lente.
@@ -586,7 +586,7 @@ MODULE Lab_4
         ! 5) Préparer le trigger pour éteindre la lampe au début du retour.
         TriggL RelTool(rSoudure_1,0,0,0\Rx:=angle_soudure_deg), v100, trig_LightOff, fine, tCrayon\WObj:=wobj0;
     
-        ! 6) Retour au point de départ (la lampe s’éteint via le trigger défini).
+        ! 6) Retour au point de départ (la lampe s'éteint via le trigger défini).
         MoveL RelTool(rSoudure_1,0,0,0\Rx:=angle_soudure_deg), VeryLowSpeed, fine, tCrayon\WObj:=wobj0;
     
         ! --- Etape 4: Finalisation ---
